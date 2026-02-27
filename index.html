@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Dream Room - Book Your Event</title>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    html, body { overflow-x: hidden; }
+    body {
+      font-family: 'Quicksand', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0; padding: 0;
+      background: #fff7e8;
+      color: #333;
+    }
+
+    header, footer {
+      background: linear-gradient(to right, #d4a853, #b8860b);
+      color: #fff; text-align: center; padding: 1.5em;
+    }
+    header h1 {
+      font-family: 'Great Vibes', cursive;
+      font-size: 2.6em; margin: 0; font-weight: 400;
+    }
+
+    footer { font-size: 0.9rem; }
+
+    #booking-form {
+      max-width: 700px; margin: 30px auto; padding: 30px;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(212, 168, 83, 0.3);
+      border: 2px solid #d4a853;
+    }
+
+    h3 {
+      text-align: center; margin-bottom: 20px;
+      color: #8b6914;
+      font-family: 'Great Vibes', cursive;
+      font-size: 1.8rem; font-weight: 400;
+    }
+
+    label {
+      display: block; margin-top: 12px;
+      font-weight: 600; color: #6b5200;
+    }
+
+    input, select, textarea {
+      width: 100%; padding: 10px; border-radius: 8px;
+      border: 1px solid #e0d4b8;
+      margin-top: 5px; box-sizing: border-box;
+      font-size: 0.95rem;
+      font-family: 'Quicksand', sans-serif;
+    }
+    textarea { min-height: 80px; resize: vertical; }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #d4a853;
+      box-shadow: 0 0 4px rgba(212, 168, 83, 0.4);
+    }
+
+    button[type="submit"] {
+      margin-top: 20px; padding: 12px 25px;
+      background: linear-gradient(to right, #d4a853, #b8860b);
+      color: #fff;
+      border: none; border-radius: 999px;
+      cursor: pointer; font-size: 1em; width: 100%;
+      font-weight: 600;
+      font-family: 'Quicksand', sans-serif;
+      box-shadow: 0 4px 12px rgba(184, 134, 11, 0.35);
+      transition: opacity 0.2s ease;
+    }
+    button[type="submit"]:hover { opacity: 0.9; }
+
+    .below-bus-text {
+      background: #ffffff; border-radius: 16px;
+      box-shadow: 0 0 12px rgba(212, 168, 83, 0.35),
+                  0 0 24px rgba(184, 134, 11, 0.2);
+      margin: 40px auto; max-width: 900px; padding: 20px;
+      font-size: 1.3em; font-weight: 600;
+      text-align: center; color: #5a4a2a; display: block;
+      border: 1px solid #d4a853;
+    }
+
+    /* Dynamic sections */
+    .service-section {
+      margin-top: 18px;
+      padding: 14px; border-radius: 12px;
+      background: #fdf8ed;
+      border: 1px dashed #d4a853;
+      display: none;
+    }
+
+    .service-section h4 {
+      color: #8b6914;
+      margin-top: 0;
+    }
+
+    .service-section small {
+      color: #7a6830;
+    }
+
+    /* Service cards */
+    .intro-highlighted-box {
+      font-size: 1.1em;
+      text-align: center;
+      font-weight: 500;
+      color: #5a4a2a;
+      margin: 30px auto;
+      padding: 14px 20px;
+      width: 90%;
+      max-width: 900px;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 0 12px rgba(212, 168, 83, 0.35),
+                  0 0 24px rgba(184, 134, 11, 0.2);
+      border: 1px solid #d4a853;
+    }
+
+    .headline-large {
+      font-size: 1.8rem;
+      display: block;
+      margin-bottom: 4px;
+      font-family: 'Great Vibes', cursive;
+      font-weight: 400;
+    }
+
+    .service-info {
+      display: flex;
+      flex-wrap: nowrap;
+      justify-content: center;
+      gap: 20px;
+      overflow-x: auto;
+      padding: 10px;
+      max-width: 100%;
+      margin: 40px auto;
+    }
+
+    .service-card {
+      min-width: 240px;
+      max-width: 240px;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+      text-align: center;
+      border: 1px solid #e8dcc4;
+      transition: transform 0.25s ease;
+      position: relative;
+      padding-bottom: 20px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .service-card h4 {
+      margin: 12px 12px 8px;
+      color: #6b5200;
+    }
+
+    .service-card p {
+      padding: 0 15px 10px;
+      font-size: 0.9em;
+      color: #7a6830;
+    }
+
+    .service-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 14px 14px 0 0;
+      transition: transform 0.3s ease;
+    }
+
+    .service-card:hover img {
+      transform: scale(1.02);
+    }
+
+    .service-card img, .service-card h4, .service-card p {
+      pointer-events: none;
+    }
+
+    /* Popups */
+    .service-hover-popup {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0.97);
+      display: none;
+      opacity: 0;
+      transition: opacity 0.35s ease, transform 0.35s ease;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+      width: 90vw;
+      max-width: 900px;
+      background: #fff;
+      padding: 28px;
+      border-radius: 18px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.22);
+      z-index: 9999;
+      border: 2px solid #d4a853;
+    }
+
+    .service-hover-popup.active {
+      display: flex;
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .popup-close {
+      position: absolute;
+      top: 8px; right: 14px;
+      font-size: 1.8em; font-weight: bold;
+      cursor: pointer; color: #7a6830;
+    }
+
+    .service-hover-popup img {
+      max-height: 350px;
+      max-width: 42%;
+      width: auto; height: auto;
+      object-fit: contain;
+      border-radius: 12px;
+      padding: 6px;
+      background: #fff;
+      border: 2px solid #d4a853;
+      box-shadow: 0 2px 10px rgba(212, 168, 83, 0.35);
+    }
+
+    .service-hover-popup .popup-text {
+      max-width: 45%;
+      min-width: 220px;
+      font-size: 1.1rem;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    .service-hover-popup .popup-text h5 {
+      font-size: 1.4rem;
+      margin-bottom: 8px;
+      color: #8b6914;
+    }
+
+    .service-hover-popup .popup-text ul {
+      list-style: none;
+      padding-left: 0;
+      text-align: left;
+    }
+
+    .service-hover-popup .popup-text li {
+      margin-bottom: 6px;
+    }
+
+    @media (max-width: 768px) {
+      .service-info {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .service-card {
+        min-width: 80%;
+        max-width: 90%;
+      }
+      .service-hover-popup img {
+        max-width: 90%;
+      }
+      .service-hover-popup .popup-text {
+        max-width: 90%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>The Dream Room</h1>
+  <p style="margin:4px 0 0; font-size:1.1em;">Book Your Event</p>
+</header>
+
+<div class="below-bus-text">
+  <strong>✨ Select your Event Type & Fill in your Details ✨</strong><br>
+  We'll get back to you as soon as possible with availability & pricing!
+</div>
+
+<div id="booking-form">
+<form id="bookingForm">
+
+<input type="hidden" name="from_name" value="Dream Room Booking Request">
+
+  <h3>Booking Request Form</h3>
+
+  <label for="serviceType">Event Type</label>
+  <select id="serviceType" name="Event Type" required>
+    <option value="" disabled selected>Select an Event Type</option>
+    <option value="private">Private Event</option>
+    <option value="children">Children's Party</option>
+    <option value="wedding">Intimate Wedding</option>
+    <option value="public">Public Event / Workshop / Class</option>
+    <option value="host">Become a Dream Host</option>
+  </select>
+
+  <label>Name</label>
+  <input type="text" name="Name" placeholder="Your Name" required />
+
+  <label>Phone</label>
+  <input type="tel" name="Phone" placeholder="709-555-1234" required />
+
+  <label>Email</label>
+  <input type="email" name="Email" placeholder="your@email.com" required />
+
+  <div class="form-row-inline">
+    <div><label>Preferred Date</label><input type="date" id="raw-date" required /><input type="hidden" id="event-date" name="Date" /></div>
+    <div><label>Preferred Time</label><input type="time" name="Time" required /></div>
+  </div>
+
+  <!-- Private Event -->
+  <div class="service-section" id="section-private">
+    <h4>Private Event Details</h4>
+    <small>Perfect for bridal showers, baby showers, birthdays, bachelorettes, anniversaries, and more!</small>
+
+    <label>Type of Event</label>
+    <input type="text" name="Private - Event Type" placeholder="Birthday, Bridal Shower, Baby Shower, Bachelorette, Anniversary, etc." />
+
+    <label>Duration</label>
+    <select name="Private - Duration">
+      <option value="" selected>Choose a duration</option>
+      <option value="1 Hour">1 Hour</option>
+      <option value="1.5 Hours">1.5 Hours</option>
+      <option value="2 Hours">2 Hours</option>
+      <option value="2.5 Hours">2.5 Hours</option>
+      <option value="3 Hours">3 Hours</option>
+      <option value="3+ Hours (Request Quote)">3+ Hours (Request Quote)</option>
+    </select>
+
+    <label>Number of Guests (Max 50)</label>
+    <input type="number" name="Private - Guest Count" min="1" max="50" />
+
+    <label>Catering</label>
+    <select name="Private - Catering">
+      <option value="" selected>Choose an option</option>
+      <option>Not Required</option>
+      <option>Interested in Catering Options</option>
+      <option>Bringing Our Own Food</option>
+    </select>
+
+    <label>Add-On Requests</label>
+    <textarea name="Private - Add-Ons" placeholder="Balloon Arch, 3D Flower Wall, Professional Hair & Makeup, Photographer, Party Cart, etc. *Prices vary"></textarea>
+
+    <label>Special Requests / Notes</label>
+    <textarea name="Private - Notes" placeholder="Tell us about your event vision..."></textarea>
+  </div>
+
+  <!-- Children's Party -->
+  <div class="service-section" id="section-children">
+    <h4>Children's Party Details</h4>
+    <small>Hosted in The Dream Room with toys, activities, and interactive features. Optional princess character host available!</small>
+
+    <label>Duration</label>
+    <select name="Children - Duration">
+      <option value="" selected>Choose a duration</option>
+      <option value="1.5 Hours">1.5 Hours</option>
+      <option value="2 Hours">2 Hours</option>
+    </select>
+
+    <label>Number of Children (18 Included, $10 Each Additional)</label>
+    <input type="number" name="Children - Number of Children" min="1" max="25" />
+
+    <label>Birthday Child's Name & Age</label>
+    <input type="text" name="Children - Birthday Child" placeholder="e.g., Oakleigh, turning 4" />
+
+    <label>Princess / Character Host?</label>
+    <select name="Children - Character Host">
+      <option value="" selected>Choose an option</option>
+      <option value="Yes">Yes — Add a Character Host</option>
+      <option value="No">No Character Needed</option>
+    </select>
+
+    <label>Character Preference (if applicable)</label>
+    <input type="text" name="Children - Character" placeholder="Elsa, Anna, Ariel, Belle, Moana, etc." />
+
+    <label>Catering</label>
+    <select name="Children - Catering">
+      <option value="" selected>Choose an option</option>
+      <option>Not Required</option>
+      <option>Pizza Package (Add $100)</option>
+      <option>Bringing Our Own Food</option>
+    </select>
+
+    <label>People's Pizza (Pick any 3)</label>
+    <small>Includes 3 Jumbo, Mix & Match: Cheese, Cheese & Pepperoni, or Garlic Fingers</small>
+    <input type="text" name="Children - Pizza Choices" placeholder="e.g., 1x Cheese, 1x Pepperoni & Cheese, 1x Garlic Fingers" />
+
+    <label>Add-On Requests</label>
+    <textarea name="Children - Add-Ons" placeholder="Bouncy Castle, Face Painting, Glitter Tattoos, Loot Bags, Party Favours, etc."></textarea>
+  </div>
+
+  <!-- Intimate Wedding -->
+  <div class="service-section" id="section-wedding">
+    <h4>Intimate Wedding Details</h4>
+    <small>Say "I do" under twinkling lights in our beautifully pre-decorated space.</small>
+
+    <label>Type</label>
+    <select name="Wedding - Type">
+      <option value="" selected>Choose an option</option>
+      <option>Ceremony Only</option>
+      <option>Ceremony + Reception</option>
+      <option>Reception Only</option>
+      <option>Wedding Morning "Get Ready" Event</option>
+    </select>
+
+    <label>Duration</label>
+    <select name="Wedding - Duration">
+      <option value="" selected>Choose a duration</option>
+      <option value="2 Hours">2 Hours</option>
+      <option value="3 Hours">3 Hours</option>
+      <option value="4 Hours">4 Hours</option>
+      <option value="4+ Hours (Request Quote)">4+ Hours (Request Quote)</option>
+    </select>
+
+    <label>Number of Guests (Max 50)</label>
+    <input type="number" name="Wedding - Guest Count" min="1" max="50" />
+
+    <label>Catering</label>
+    <select name="Wedding - Catering">
+      <option value="" selected>Choose an option</option>
+      <option>Not Required</option>
+      <option>Interested in Catering Options</option>
+      <option>Bringing Our Own Food</option>
+    </select>
+
+    <label>Add-On Requests</label>
+    <textarea name="Wedding - Add-Ons" placeholder="Professional Hair & Makeup, Photographer, Flower Arrangements, DJ, etc."></textarea>
+
+    <label>Special Requests / Notes</label>
+    <textarea name="Wedding - Notes" placeholder="Tell us about your dream wedding vision..."></textarea>
+  </div>
+
+  <!-- Public Event -->
+  <div class="service-section" id="section-public">
+    <h4>Public Event / Workshop / Class Details</h4>
+    <small>Host a class, workshop, club meeting, or public event in The Dream Room.</small>
+
+    <label>Event Name</label>
+    <input type="text" name="Public - Event Name" placeholder="e.g., Paint Night, Yoga Class, Book Club" />
+
+    <label>Duration</label>
+    <select name="Public - Duration">
+      <option value="" selected>Choose a duration</option>
+      <option value="1 Hour">1 Hour</option>
+      <option value="1.5 Hours">1.5 Hours</option>
+      <option value="2 Hours">2 Hours</option>
+      <option value="2.5 Hours">2.5 Hours</option>
+      <option value="3 Hours">3 Hours</option>
+      <option value="3+ Hours (Request Quote)">3+ Hours (Request Quote)</option>
+    </select>
+
+    <label>Expected Attendance</label>
+    <input type="number" name="Public - Attendance" min="1" max="50" />
+
+    <label>Recurring?</label>
+    <select name="Public - Recurring">
+      <option value="" selected>Choose an option</option>
+      <option>One-time event</option>
+      <option>Weekly</option>
+      <option>Bi-weekly</option>
+      <option>Monthly</option>
+      <option>Other (explain in notes)</option>
+    </select>
+
+    <label>Special Requirements / Notes</label>
+    <textarea name="Public - Notes" placeholder="AV equipment needs, seating arrangements, setup requests, etc."></textarea>
+  </div>
+
+  <!-- Become a Dream Host -->
+  <div class="service-section" id="section-host">
+    <h4>Become a Dream Host</h4>
+    <small>Interested in hosting public events at The Dream Room? The more you host, the less you pay!</small>
+
+    <label>What type of events would you like to host?</label>
+    <textarea name="Host - Event Types" placeholder="Classes, workshops, meetups, recurring sessions, etc."></textarea>
+
+    <label>How often?</label>
+    <select name="Host - Frequency">
+      <option value="" selected>Choose an option</option>
+      <option>Weekly</option>
+      <option>Bi-weekly</option>
+      <option>Monthly</option>
+      <option>Flexible / On-demand</option>
+    </select>
+
+    <label>Tell us about yourself</label>
+    <textarea name="Host - About" placeholder="A bit about you and what you'd bring to The Dream Room community..."></textarea>
+  </div>
+
+<button type="submit">Book Now</button>
+
+</form>
+</div>
+
+<!-- SERVICE CARDS -->
+<div class="intro-highlighted-box">
+  <span class="headline-large">Our Event Options</span>
+  Tap or hover each card below to learn more about what we offer.
+</div>
+
+<div class="service-info">
+  <div class="service-card" data-popup="popup-private">
+    <img src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=400&h=300&fit=crop" alt="Private Event">
+    <h4>🥂 Private Events</h4>
+    <p>Birthdays, bridal showers, baby showers, bachelorettes, and more.</p>
+  </div>
+
+  <div class="service-card" data-popup="popup-children">
+    <img src="https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&h=300&fit=crop" alt="Children's Party">
+    <h4>👑 Children's Parties</h4>
+    <p>Magical parties with toys, activities, and optional princess character hosts.</p>
+  </div>
+
+  <div class="service-card" data-popup="popup-wedding">
+    <img src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=400&h=300&fit=crop" alt="Intimate Wedding">
+    <h4>💍 Intimate Weddings</h4>
+    <p>Say "I do" under twinkling lights in our pre-decorated space.</p>
+  </div>
+
+  <div class="service-card" data-popup="popup-publiccard">
+    <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&h=300&fit=crop" alt="Public Event">
+    <h4>🎓 Public Events</h4>
+    <p>Classes, workshops, meetups, and community gatherings.</p>
+  </div>
+</div>
+
+<!-- POPUPS -->
+<div class="service-hover-popup" id="popup-private">
+  <span class="popup-close">&times;</span>
+  <img src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&h=400&fit=crop" alt="Private Event">
+  <div class="popup-text">
+    <h5>Private Event Highlights</h5>
+    <ul>
+      <li>✨ Pre-decorated, elegant space</li>
+      <li>🪑 Tables, chairs, and setup included</li>
+      <li>🎈 Add-ons: balloon arches, flower walls, photo backdrops</li>
+      <li>🥂 Perfect for showers, birthdays, bachelorettes</li>
+      <li>📍 69 Karwood Drive, Paradise</li>
+    </ul>
+  </div>
+</div>
+
+<div class="service-hover-popup" id="popup-children">
+  <span class="popup-close">&times;</span>
+  <img src="https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&h=400&fit=crop" alt="Children's Party">
+  <div class="popup-text">
+    <h5>Children's Party Highlights</h5>
+    <ul>
+      <li>👑 Optional princess or character host</li>
+      <li>🎮 Toys, activities, and interactive features included</li>
+      <li>🎂 Space for cake, gifts, and photos</li>
+      <li>🍕 Pizza catering package available</li>
+      <li>✨ Upgrades: face painting, bouncy castle, loot bags</li>
+    </ul>
+  </div>
+</div>
+
+<div class="service-hover-popup" id="popup-wedding">
+  <span class="popup-close">&times;</span>
+  <img src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=600&h=400&fit=crop" alt="Intimate Wedding">
+  <div class="popup-text">
+    <h5>Intimate Wedding Highlights</h5>
+    <ul>
+      <li>💍 Ceremony and/or reception options</li>
+      <li>✨ Twinkling lights and elegant decor</li>
+      <li>💄 Wedding morning "get ready" events</li>
+      <li>📸 Beautiful photo opportunities</li>
+      <li>🥂 Catering options available</li>
+    </ul>
+  </div>
+</div>
+
+<div class="service-hover-popup" id="popup-publiccard">
+  <span class="popup-close">&times;</span>
+  <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&h=400&fit=crop" alt="Public Event">
+  <div class="popup-text">
+    <h5>Public Event Highlights</h5>
+    <ul>
+      <li>🎓 Classes, workshops, and club meetings</li>
+      <li>💰 Recurring host discounts — the more you host, the less you pay</li>
+      <li>🪑 Flexible seating arrangements</li>
+      <li>📍 Central Paradise location</li>
+      <li>🤝 Become a Dream Host for ongoing events</li>
+    </ul>
+  </div>
+</div>
+
+<!-- POPUP SCRIPT -->
+<script>
+  const cards = document.querySelectorAll(".service-card");
+  const popups = document.querySelectorAll(".service-hover-popup");
+
+  function closeAllPopups() {
+    popups.forEach(p => p.classList.remove("active"));
+  }
+
+  if (window.innerWidth > 768) {
+    cards.forEach(card => {
+      const popup = document.getElementById(card.dataset.popup);
+      card.addEventListener("mouseenter", () => {
+        closeAllPopups();
+        popup.classList.add("active");
+      });
+      card.addEventListener("mouseleave", () => {
+        popup.classList.remove("active");
+      });
+    });
+  }
+
+  if (window.innerWidth <= 768) {
+    cards.forEach(card => {
+      card.addEventListener("click", e => {
+        e.stopPropagation();
+        closeAllPopups();
+        document.getElementById(card.dataset.popup).classList.add("active");
+      });
+    });
+    document.addEventListener("click", closeAllPopups);
+  }
+
+  document.querySelectorAll(".popup-close").forEach(btn => {
+    btn.addEventListener("click", closeAllPopups);
+  });
+</script>
+
+<!-- DYNAMIC SECTIONS SCRIPT -->
+<script>
+  const select = document.getElementById("serviceType");
+  const sections = {
+    private: document.getElementById("section-private"),
+    children: document.getElementById("section-children"),
+    wedding: document.getElementById("section-wedding"),
+    public: document.getElementById("section-public"),
+    host: document.getElementById("section-host")
+  };
+
+  function updateSections() {
+    Object.values(sections).forEach(s => s.style.display = "none");
+    if (sections[select.value]) {
+      sections[select.value].style.display = "block";
+    }
+  }
+  select.addEventListener("change", updateSections);
+</script>
+
+<!-- DATE PRETTY-PRINT SCRIPT -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const form   = document.querySelector("form");
+    const raw    = document.getElementById("raw-date");
+    const pretty = document.getElementById("event-date");
+
+    const WEEK = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    const MONTH = ["January","February","March","April","May","June","July","August",
+                  "September","October","November","December"];
+
+    function buildPretty(iso) {
+      if (!iso) return "";
+      const [y,m,d] = iso.split("-").map(Number);
+      const dt = new Date(Date.UTC(y, m-1, d));
+      return WEEK[dt.getUTCDay()] + ", " + MONTH[m-1] + " " + d + ", " + y;
+    }
+
+    function sync() {
+      pretty.value = buildPretty(raw.value);
+    }
+
+    raw.addEventListener("input", sync);
+    raw.addEventListener("change", sync);
+    form.addEventListener("submit", sync);
+    sync();
+  });
+</script>
+
+<!-- WEB3FORMS SUBMISSION -->
+<script>
+document.getElementById('bookingForm').addEventListener('submit', async function (e) {
+  e.preventDefault();
+
+  const form = this;
+  const submitBtn = form.querySelector("button[type='submit']");
+  submitBtn.disabled = true;
+  submitBtn.innerText = "Submitting...";
+
+  const service = document.getElementById("serviceType").value;
+  const fullData = new FormData(form);
+  const formData = new FormData();
+
+  // Remove section prefixes + filter empty/irrelevant fields
+  fullData.forEach((value, key) => {
+    let cleanKey = key.replace(/^Private - /, "")
+                      .replace(/^Children - /, "")
+                      .replace(/^Wedding - /, "")
+                      .replace(/^Public - /, "")
+                      .replace(/^Host - /, "")
+                      .trim();
+
+    if (!value) return;
+
+    // Skip unrelated section fields
+    if (key.includes("Private") && service !== "private") return;
+    if (key.includes("Children") && service !== "children") return;
+    if (key.includes("Wedding") && service !== "wedding") return;
+    if (key.includes("Public") && service !== "public") return;
+    if (key.includes("Host") && service !== "host") return;
+
+    formData.append(cleanKey, value);
+  });
+
+  // TODO: Replace with Dream Room Web3Forms access key
+  formData.append("access_key", "YOUR_ACCESS_KEY_HERE");
+
+  try {
+    const response = await fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      body: formData
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      window.location.href = "thank-you.html";
+    } else {
+      alert("Something went wrong. Please try refreshing and trying again.");
+      submitBtn.disabled = false;
+      submitBtn.innerText = "Book Now";
+    }
+
+  } catch (error) {
+    alert("Network error. Please try again.");
+    submitBtn.disabled = false;
+    submitBtn.innerText = "Book Now";
+  }
+});
+</script>
+
+<footer>
+  <p>The Dream Room &middot; 69 Karwood Drive, Paradise, NL &middot; (709) 769-2462</p>
+  <p>&copy; 2025 The Dream Room NL</p>
+</footer>
+
+</body>
+</html>
