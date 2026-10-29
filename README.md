@@ -82,3 +82,11 @@ Mobile-friendly customer-facing booking request page for The Dream Room, Paradis
 - The wedding décor gallery has separate **Table linens** and **Chair covers** photo tiles.
 - Clicking/tapping the chair-cover thumbnail opens the matching actual photo, not the old shared linen preview. Desktop hover zoom remains enabled.
 - The lightweight WebP preview is optimized for mobile and originally supplied as a larger JPEG; retain the original for professional marketing.
+
+## Ceremony seating & styling photo gallery
+
+- **Ceremony seating & styling** is a single wedding-gallery tile, using the owner's **first newly supplied photo** as its cover.
+- Tapping it opens a dedicated **three-photo** carousel showing the actual venue from several ceremony perspectives: white aisle runner, chair covers, floral/crystal aisle pillars, and layout options.
+- Next/previous controls cycle within these three ceremony photos; other décor categories stay independent.
+- The compressed, privacy-safe photo asset is `assets/ceremony-seating-styling.webp`. The three original high-resolution images remain with the owner, and final ceremony layouts may vary.
+- **Pricing unchanged:** ceremony styling shown is an example, not an automatic inclusion in the DIY hourly rental. Styled & Staffed package inclusions remain as described above.
