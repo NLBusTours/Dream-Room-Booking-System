@@ -80,6 +80,8 @@
     .decor-tile-caption {font-size:.72rem;color:#6e405b;text-align:center;padding:7px 5px;line-height:1.3;font-weight:650;}
     .decor-sprite {display:block;width:100%;height:100%;background-image:url('assets/real-dream-room-decor.webp');background-size:200% 200%;background-position:var(--photo-x,0%) var(--photo-y,0%);background-repeat:no-repeat;background-color:#f5eaf0;}
     .decor-thumb>.decor-sprite {height:94px;flex:none;}
+    .decor-thumb>.ceremony-preview {height:94px;flex:none;width:100%;background-image:url('assets/ceremony-seating-styling.webp');background-repeat:no-repeat;background-size:300% 100%;background-position:0% 50%;background-color:#faf4f6;}
+    @media (hover:hover) and (pointer:fine) {.decor-thumb:hover>.ceremony-preview{filter:brightness(1.05);}}
     .decor-thumb>.decor-single-thumb {height:94px;width:100%;flex:none;object-fit:cover;object-position:center 35%;display:block;}
     @media (hover:hover) and (pointer:fine) {.decor-thumb:hover>.decor-single-thumb{filter:brightness(1.06);}}
     @media (hover:hover) and (pointer:fine) {.decor-thumb:hover>.decor-sprite{filter:brightness(1.06);}}
@@ -212,7 +214,7 @@
               <div><strong>Take a look at our décor</strong><p class="hint">Actual photos of our wedding décor. Hover on desktop or tap on mobile to see a larger preview. Layouts may vary.</p></div>
             </div>
             <div class="decor-photo-strip">
-              <button class="decor-thumb" type="button" data-photo-index="0" aria-label="Enlarge Aisle runner & ceremony styling photo"><span class="decor-sprite" style="--photo-x:0%;--photo-y:0%" aria-hidden="true"></span><span class="decor-tile-caption">Aisle runner & ceremony styling</span></button>
+              <button class="decor-thumb" type="button" data-photo-index="6" data-photo-gallery="ceremony" aria-label="View 3 ceremony seating and styling photos"><span class="ceremony-preview" aria-hidden="true"></span><span class="decor-tile-caption">Ceremony seating &amp; styling · 3 photos</span></button>
               <button class="decor-thumb" type="button" data-photo-index="2" aria-label="Enlarge Wedding centrepieces photo"><span class="decor-sprite" style="--photo-x:0%;--photo-y:100%" aria-hidden="true"></span><span class="decor-tile-caption">Wedding centrepieces</span></button>
               <button class="decor-thumb" type="button" data-photo-index="3" aria-label="Enlarge Table linens & chair covers photo"><span class="decor-sprite" style="--photo-x:100%;--photo-y:100%" aria-hidden="true"></span><span class="decor-tile-caption">Table linens</span></button>
               <button class="decor-thumb" type="button" data-photo-index="1" aria-label="Enlarge High-rise cocktail tables photo"><span class="decor-sprite" style="--photo-x:100%;--photo-y:0%" aria-hidden="true"></span><span class="decor-tile-caption">High-rise cocktail tables</span></button>
@@ -414,16 +416,26 @@
     {label:'Wedding centrepieces',x:'0%',y:'100%'},
     {label:'Table linens',x:'100%',y:'100%'},
     {label:'Champagne and floral feature walls',src:'https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000034727.jpg/:/rs=w:1300,h:800',included:true},
-    {label:'Chair covers',src:'assets/chair-covers.webp'}
+    {label:'Chair covers',src:'assets/chair-covers.webp'},
+    {label:'Ceremony seating & styling',atlas:'assets/ceremony-seating-styling.webp',x:'0%',position:1},
+    {label:'Ceremony seating & styling',atlas:'assets/ceremony-seating-styling.webp',x:'50%',position:2},
+    {label:'Ceremony seating & styling',atlas:'assets/ceremony-seating-styling.webp',x:'100%',position:3}
   ];
+  const ceremonyIndices = [6,7,8];
+  const regularIndices = [1,2,3,4,5];
   const decorPhotoDialog = document.getElementById('decorPhotoDialog');
   const decorPhotoImage = document.getElementById('expandedDecorPhoto');
   const decorSingleImage = document.getElementById('expandedDecorSingle');
   const decorPhotoCaption = document.getElementById('decorPhotoCaption');
   let activeDecorPhotoIndex = 0;
-  function showDecorPhoto(index) {
-    activeDecorPhotoIndex = (index + decorItems.length) % decorItems.length;
+  let activeDecorGallery = 'regular';
+
+  function showDecorPhoto(index, gallery = activeDecorGallery) {
+    const allowed = gallery === 'ceremony' ? ceremonyIndices : regularIndices;
+    activeDecorGallery = gallery;
+    activeDecorPhotoIndex = allowed.includes(index) ? index : allowed[0];
     const photo = decorItems[activeDecorPhotoIndex];
+
     if (photo.src) {
       decorPhotoImage.hidden = true;
       decorSingleImage.hidden = false;
@@ -432,22 +444,42 @@
     } else {
       decorSingleImage.hidden = true;
       decorPhotoImage.hidden = false;
-      decorPhotoImage.style.backgroundPosition = photo.x + ' ' + photo.y;
-      decorPhotoImage.setAttribute('aria-label', 'The Dream Room: ' + photo.label);
+      const image = photo.atlas || 'assets/real-dream-room-decor.webp';
+      decorPhotoImage.style.backgroundImage = 'url("' + image + '")';
+      decorPhotoImage.style.backgroundSize = photo.atlas ? '300% 100%' : '200% 200%';
+      decorPhotoImage.style.backgroundPosition = photo.x + ' ' + (photo.atlas ? '50%' : photo.y);
+      decorPhotoImage.setAttribute('aria-label', photo.atlas
+        ? 'The Dream Room ceremony seating and styling example ' + photo.position + ' of 3'
+        : 'The Dream Room: ' + photo.label);
     }
-    decorPhotoCaption.textContent = photo.label +
-      (photo.included ? ' · Included with venue rental.' : ' · Actual venue décor. Final event layouts may vary.');
+
+    decorPhotoCaption.textContent = photo.atlas
+      ? 'Ceremony seating & styling · Photo ' + photo.position + ' of 3. Examples of aisle runner, chair covers, floral aisle pillars and ceremony seating layouts. Wedding-specific décor is included with Styled & Staffed packages or arranged separately for DIY rentals.'
+      : photo.label + (photo.included
+        ? ' · Included with venue rental.'
+        : ' · Actual venue décor. Final event layouts may vary.');
     if (!decorPhotoDialog.open) decorPhotoDialog.showModal();
   }
+
+  function browseDecor(direction) {
+    const allowed = activeDecorGallery === 'ceremony' ? ceremonyIndices : regularIndices;
+    const currentPosition = allowed.indexOf(activeDecorPhotoIndex);
+    const nextPosition = (currentPosition + direction + allowed.length) % allowed.length;
+    showDecorPhoto(allowed[nextPosition], activeDecorGallery);
+  }
+
   document.querySelectorAll('.decor-thumb').forEach(button => {
-    button.addEventListener('click', () => showDecorPhoto(Number(button.dataset.photoIndex)));
+    button.addEventListener('click', () => showDecorPhoto(
+      Number(button.dataset.photoIndex),
+      button.dataset.photoGallery === 'ceremony' ? 'ceremony' : 'regular'
+    ));
   });
   document.querySelectorAll('[data-view-decor]').forEach(button => {
-    button.addEventListener('click', () => showDecorPhoto(Number(button.dataset.photoIndex)));
+    button.addEventListener('click', () => showDecorPhoto(Number(button.dataset.photoIndex), 'regular'));
   });
   document.getElementById('closeDecorGallery').addEventListener('click', () => decorPhotoDialog.close());
-  document.getElementById('prevDecorPhoto').addEventListener('click', () => showDecorPhoto(activeDecorPhotoIndex - 1));
-  document.getElementById('nextDecorPhoto').addEventListener('click', () => showDecorPhoto(activeDecorPhotoIndex + 1));
+  document.getElementById('prevDecorPhoto').addEventListener('click', () => browseDecor(-1));
+  document.getElementById('nextDecorPhoto').addEventListener('click', () => browseDecor(1));
   // GoDaddy embed mode removes duplicate page branding.
   if (new URLSearchParams(window.location.search).get('embed') === '1') {
     document.body.classList.add('embed-view');
