@@ -100,7 +100,8 @@
     el.textContent = code === 'booked' ? 'Booked' :
       code === 'available' ? 'Open to request' :
       code === 'request' ? 'Request only' :
-      code === 'checking' ? 'Checking…' : 'Not verified';
+      code === 'checking' ? 'Checking…' :
+      code === 'nodate' ? 'Choose date' : 'Not verified';
     return el;
   }
 
@@ -126,8 +127,8 @@
     for (const option of Array.from(config.field.options).slice(1)) {
       const custom = option.value === 'other';
       const parts = custom ? null : option.value.split('|');
-      const status = custom ? 'request' : !day || state === 'loading' || state === 'idle'
-        ? 'checking' : fresh
+      const status = !day ? 'nodate' : custom ? 'request' :
+        state === 'loading' || state === 'idle' ? 'checking' : fresh
         ? availabilityFor(snapshot, day, parts[0], parts[1])
         : 'unknown';
 
