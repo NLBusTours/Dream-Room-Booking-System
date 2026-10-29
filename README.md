@@ -51,3 +51,10 @@ Mobile-friendly customer-facing booking request page for The Dream Room, Paradis
 - Images are examples of the overall venue styling, **not verified item-specific product closeups**, and a disclaimer is displayed. For individual item selection galleries, obtain actual closeup photos for aisle carpet, aisle pillars, centrepieces, table linens, chair covers, champagne wall and high-rise cocktail tables and associate each with its matching item.
 - The existing GoDaddy embed code and `?embed=1` URL are unchanged.
 - The gallery images are served from the business's public GoDaddy image CDN; if the original website removes or changes those media URLs, the thumbnails will need updating.
+
+## Add-on photo preview styling
+
+- Each of the four image-enabled add-ons now has a small preview thumbnail instead of a text-only `View photos` link.
+- Desktop hover (fine pointer only) zooms the photo visually; tapping or clicking opens the full-screen venue gallery with keyboard-friendly native `<dialog>` controls. Mobile users can always tap the thumbnail; there is no reliance on hover.
+- Linens and chair covers use the confirmed 1000037118.jpg image already present on the Dream Room GoDaddy gallery, which visibly shows both. Additional décor and cocktail tables currently show *general venue inspiration*, not individually verified item close-ups. The wording explicitly distinguishes them.
+- The user has separately supplied aisle-runner and cocktail-table photos in chat. Those original image files have **not yet been uploaded to this public repository**. Replace general venue examples with individually hosted file URLs after obtaining stable public hosting or uploading the photographs to the repository.
