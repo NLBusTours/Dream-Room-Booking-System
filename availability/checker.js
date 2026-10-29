@@ -256,12 +256,10 @@
       message.textContent = 'Choose your preferred date and hours to check availability.';
       return;
     }
-    if (state === 'idle' || state === 'loading') {
-      message.textContent = 'Checking the Dream Room calendar…';
-      return;
-    }
     if (!fresh) {
-      message.textContent = 'Availability cannot be verified right now. You can still submit a booking inquiry for confirmation.';
+      message.textContent = state === 'idle' || state === 'loading'
+        ? 'Checking the Dream Room calendar…'
+        : 'Availability cannot be verified right now. You can still submit a booking inquiry for confirmation.';
     } else {
       updated.textContent = 'Calendar checked ' + new Intl.DateTimeFormat('en-CA', {
         timeZone: 'America/St_Johns', dateStyle: 'medium', timeStyle: 'short'
@@ -380,6 +378,8 @@
     target.scrollIntoView({behavior:'smooth',block:'center'});
   }, true);
   for (const field of [startField, endField]) field.addEventListener('input', changed);
+  const weddingPackageField = byId('weddingPackage');
+  if (weddingPackageField) weddingPackageField.addEventListener('change', changed);
   refresh.addEventListener('click', () => load(true));
   changed();
 })();
