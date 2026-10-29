@@ -67,6 +67,10 @@
     .aside li::before { content:'✧ '; color:var(--rose); }
     .aside .tint { background:#faf1f7; }
     footer { border-top:1px solid var(--border); text-align:center; padding:25px 15px 35px; color:#796875; font-size:.87rem; }
+    body.embed-view { background:transparent; }
+    body.embed-view .mast, body.embed-view .aside, body.embed-view footer { display:none; }
+    body.embed-view .wrap.main-grid { width:100%; max-width:920px; margin:0 auto; padding:0; display:block; }
+    body.embed-view .form-panel { border:none; box-shadow:none; border-radius:0; background:transparent; padding:20px 12px; }
     @media (max-width:840px) { .main-grid { grid-template-columns:1fr; } .aside { grid-template-columns:repeat(2,minmax(0,1fr)); } }
     @media (max-width:580px) { .hero { grid-template-columns:1fr; padding:26px 0 48px; } .hero-symbol { display:none; } .two,.chip-list,.aside { grid-template-columns:1fr; } .form-panel { padding:21px 17px; } .main-grid { margin-top:-20px; } h1 { font-size:2.45rem; } }
     @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
@@ -138,7 +142,7 @@
               <select id="showerBookingOption" name="Shower rental option" disabled>
                 <option value="">Choose a rental option</option>
                 <option value="special">Sunday 3-hour special</option>
-                <option value="standard">Standard rental (other hours)</option>
+                <option value="standard">Request another time (standard rental)</option>
               </select>
             </div>
             <div class="field" id="sundayShowerSlotsBlock" hidden><label for="sundayShowerSlot">Choose your 3-hour time slot <span class="req">*</span></label>
@@ -159,8 +163,9 @@
                 <option value="10:00|12:00">10:00 AM – 12:00 PM</option>
                 <option value="11:00|13:00">11:00 AM – 1:00 PM</option>
                 <option value="14:00|16:00">2:00 PM – 4:00 PM</option>
+                <option value="other">Request another time (subject to approval)</option>
               </select>
-              <p class="hint">All time slots are requests and subject to availability. Please include any special setup or cleanup needs in your notes.</p>
+              <p class="hint">These are our preferred time slots. Other times may be requested, but they must be approved by our team and may affect availability.</p>
             </div>
           </div>
           <div id="customTimesBlock" class="two">
@@ -245,6 +250,10 @@
   <footer>© <span id="year">2026</span> The Dream Room · 69 Karwood Drive, Paradise, NL</footer>
 
   <script>
+    // Hide the standalone header and sidebar when embedded on GoDaddy.
+    if (new URLSearchParams(window.location.search).get('embed') === '1') {
+      document.body.classList.add('embed-view');
+    }
     // Existing Dream Room Web3Forms key, retained from the original repository.
     const WEB3FORMS_ACCESS_KEY = 'c3d8b41d-1390-485b-a9ba-c5c79ae9c057';
     const form = document.getElementById('bookingForm');
