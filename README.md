@@ -67,3 +67,11 @@ Mobile-friendly customer-facing booking request page for The Dream Room, Paradis
 - The checker fails closed whenever the issue's snapshot is missing, malformed, or more than 2 hours old. Booking inquiries continue to work even while the connection is not configured.
 - **Required one-time setup:** follow [availability/SETUP.md](availability/SETUP.md), add the secret via GitHub Settings, and manually run the workflow once. The connector cannot set this secret on the owner's behalf.
 - This does not automatically reserve the venue or create/update any events.
+
+## Combined slot selection and availability (mobile-friendly)
+
+- For Saturday/Sunday shower packages and children's parties, the native time dropdown is progressively enhanced into a **single set of tappable time-slot cards**. Each displays **Booked**, **Open to request**, **Not verified**, or **Request only** beside the option.
+- A known-booked fixed slot is disabled; the user can choose a different date or request a nonstandard time. If the calendar changes while a selection is active, the booked selection is cleared. Form submission also rejects booked fixed slots.
+- When the calendar is loading, fixed slots remain unselectable until availability can be checked. If the feed cannot be verified, the cards allow requests with a clear warning and team approval requirement.
+- The old duplicate availability section no longer appears below those predefined time slots. **Custom times**, weddings, and other flexible-hour rentals retain the separate exact-hours availability check.
+- Native select fields remain in the DOM to preserve calculation, email submission and no-JavaScript fallback.

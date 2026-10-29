@@ -73,6 +73,14 @@
   const endField = byId('endTime');
   const childField = byId('childTimeSlot');
   const showerField = byId('showerTimeChoice');
+  const form = byId('bookingForm');
+  const choices = [
+    {field: showerField, host: byId('showerBookingBlock'),
+      list: byId('showerSlotCards'), helper: byId('showerSlotStatus'), label: 'shower'},
+    {field: childField, host: byId('childSlotsBlock'),
+      list: byId('childSlotCards'), helper: byId('childSlotStatus'), label: 'children'}
+  ];
+  const chosenBookedWarnings = {shower: '', children: ''};
 
   let snapshot = null;
   let state = 'idle';
@@ -86,83 +94,140 @@
     return day === 0 || day === 6;
   }
 
-  function slotDefinitions() {
-    if (typeField.value === 'children') return [
-      ['10:00 AM–12:00 PM', '10:00', '12:00'],
-      ['11:00 AM–1:00 PM', '11:00', '13:00'],
-      ['2:00 PM–4:00 PM', '14:00', '16:00'],
-    ];
-    if (typeField.value === 'shower' && isWeekend(dateField.value)) return [
-      ['10:00 AM–1:00 PM · shower special', '10:00', '13:00'],
-      ['2:00 PM–5:00 PM · shower special', '14:00', '17:00'],
-    ];
-    return [];
-  }
-
   function chip(code) {
     const el = document.createElement('span');
     el.className = 'availability-tag ' + code;
     el.textContent = code === 'booked' ? 'Booked' :
-      code === 'available' ? 'Open to request' : 'Not verified';
+      code === 'available' ? 'Open to request' :
+      code === 'request' ? 'Request only' :
+      code === 'checking' ? 'Checking…' :
+      code === 'nodate' ? 'Choose date' : 'Not verified';
     return el;
+  }
+
+  // A single set of selection cards replaces both the dropdown and the
+  // duplicate availability list. The select stays in the DOM for existing
+  // booking, estimate, and email logic. If this script fails to load, the
+  // original dropdown remains usable.
+  function renderChoices(config, fresh) {
+    if (!config.host || config.host.hidden) {
+      config.list.hidden = true;
+      config.helper.hidden = true;
+      config.field.parentElement.classList.remove('slot-choice-enhanced');
+      return;
+    }
+    config.field.parentElement.classList.add('slot-choice-enhanced');
+    config.field.required = false; // visible cards provide selection validation
+    config.list.hidden = false;
+    config.helper.hidden = false;
+    config.list.replaceChildren();
+
+    const day = dateField.value;
+    let freeCount = 0, bookedCount = 0;
+    for (const option of Array.from(config.field.options).slice(1)) {
+      const custom = option.value === 'other';
+      const parts = custom ? null : option.value.split('|');
+      const status = !day ? 'nodate' : custom ? 'request' :
+        state === 'loading' || state === 'idle' ? 'checking' : fresh
+        ? availabilityFor(snapshot, day, parts[0], parts[1])
+        : 'unknown';
+
+      if (status === 'booked') bookedCount++;
+      if (status === 'available') freeCount++;
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'slot-choice';
+      button.setAttribute('aria-pressed', String(config.field.value === option.value));
+      button.disabled = !day || status === 'booked' || status === 'checking';
+      const text = document.createElement('span');
+      text.className = 'slot-title';
+      text.textContent = option.textContent.trim();
+      button.append(text, chip(status));
+      button.addEventListener('click', () => {
+        if (button.disabled) return;
+        chosenBookedWarnings[config.label] = '';
+        config.field.value = option.value;
+        config.field.dispatchEvent(new Event('change', {bubbles: true}));
+      });
+      config.list.append(button);
+    }
+
+    // If the calendar updated after a customer made a selection, clear the
+    // now-booked slot. Never silently accept a known unavailable fixed slot.
+    const selected = config.field.value;
+    if (fresh && day && selected && selected !== 'other') {
+      const parts = selected.split('|');
+      if (availabilityFor(snapshot, day, parts[0], parts[1]) === 'booked') {
+        chosenBookedWarnings[config.label] = 'That time is already booked. Please choose another date or request a different time.';
+        config.field.value = '';
+        config.field.dispatchEvent(new Event('change', {bubbles: true}));
+        return;
+      }
+    }
+
+    config.helper.classList.toggle('error', Boolean(chosenBookedWarnings[config.label]));
+    if (chosenBookedWarnings[config.label]) {
+      config.helper.textContent = chosenBookedWarnings[config.label];
+    } else if (!day) {
+      config.helper.textContent = 'Choose your preferred date first to see available times.';
+    } else if (state === 'loading' || state === 'idle') {
+      config.helper.textContent = 'Checking the Dream Room calendar…';
+    } else if (!fresh) {
+      config.helper.textContent = 'Calendar unavailable or out of date. Times can still be requested and will be verified by our team.';
+    } else if (freeCount === 0 && bookedCount > 0) {
+      config.helper.textContent = 'All listed slots are booked. Choose another date or request another time for review.';
+    } else {
+      const checked = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'America/St_Johns', dateStyle: 'medium', timeStyle: 'short'
+      }).format(new Date(snapshot.generated_at));
+      config.helper.textContent = 'Calendar checked ' + checked +
+        '. Open times are requests only, subject to confirmation.';
+    }
   }
 
   function render() {
     const type = typeField.value;
-    panel.hidden = !type || type === 'host';
+    const day = dateField.value;
+    const fresh = state === 'ready' && snapshotIsCurrent(snapshot, Date.now());
+    for (const config of choices) renderChoices(config, fresh);
+
+    // When a fixed-slot category is selected, availability is already shown
+    // directly on each time choice: no duplicated panel farther down.
+    const customChoice = type === 'children' ? childField.value === 'other' :
+      type === 'shower' && isWeekend(day) ? showerField.value === 'other' : true;
+    panel.hidden = !type || type === 'host' || !customChoice;
     if (panel.hidden) return;
 
-    const day = dateField.value;
+    updated.textContent = '';
     slots.replaceChildren();
     slots.hidden = true;
     if (!day) {
-      message.textContent = 'Choose a preferred date to see which time slots may be available.';
-      updated.textContent = '';
+      message.textContent = 'Choose your preferred date and hours to check availability.';
       return;
     }
-
     if (state === 'idle' || state === 'loading') {
       message.textContent = 'Checking the Dream Room calendar…';
-      updated.textContent = '';
       return;
     }
-    const fresh = state === 'ready' && snapshotIsCurrent(snapshot, Date.now());
     if (!fresh) {
-      message.textContent = state === 'error'
-        ? 'Availability cannot be verified right now. You can still submit a booking inquiry.'
-        : 'Calendar information needs updating. Please submit an inquiry for confirmation.';
-      updated.textContent = '';
+      message.textContent = 'Availability cannot be verified right now. You can still submit a booking inquiry for confirmation.';
     } else {
-      updated.textContent = 'Calendar snapshot checked ' + new Intl.DateTimeFormat('en-CA', {
+      updated.textContent = 'Calendar checked ' + new Intl.DateTimeFormat('en-CA', {
         timeZone: 'America/St_Johns', dateStyle: 'medium', timeStyle: 'short'
       }).format(new Date(snapshot.generated_at)) + '. Updates are not instantaneous.';
     }
 
-    const choices = slotDefinitions();
-    if (choices.length) {
-      slots.hidden = false;
-      for (const [label, from, through] of choices) {
-        const row = document.createElement('div');
-        row.className = 'availability-slot';
-        const title = document.createElement('span');
-        title.textContent = label;
-        row.append(title, chip(fresh ? availabilityFor(snapshot, day, from, through) : 'unknown'));
-        slots.append(row);
-      }
-    }
-
     const begin = startField.value, end = endField.value;
     if (!begin || !end) {
-      message.textContent = fresh ? 'Select a time slot above to check your exact requested hours.' :
-        'Exact availability is not currently verified. Our team can confirm your request.';
+      if (fresh) message.textContent = 'Enter your requested hours to check for booking conflicts.';
       return;
     }
     const code = fresh ? availabilityFor(snapshot, day, begin, end) : 'unknown';
     message.textContent = code === 'booked'
-      ? 'Your selected hours overlap an existing booking. Please choose another time or include an alternate date.'
+      ? 'Your requested hours overlap an existing booking. Please choose another time or date.'
       : code === 'available'
-      ? 'Your selected hours may be available! Send an inquiry and our team will confirm.'
-      : 'We cannot verify your chosen hours right now. You can still send an inquiry for staff confirmation.';
+      ? 'These hours appear open to request! Our team will confirm your booking.'
+      : 'We cannot verify these hours right now. You can still submit an inquiry for staff confirmation.';
   }
 
   async function load(force = false) {
@@ -206,8 +271,38 @@
     if (dateField.value && typeField.value && typeField.value !== 'host') load();
   }
   for (const field of [typeField, dateField, startField, endField, childField, showerField]) {
-    field.addEventListener('change', changed);
+    field.addEventListener('change', () => {
+      if (field === dateField || field === typeField) {
+        chosenBookedWarnings.shower = '';
+        chosenBookedWarnings.children = '';
+      }
+      changed();
+    });
   }
+  // Use the visible card group for required choices; the hidden select is
+  // still submitted by the existing form workflow.
+  form.addEventListener('submit', event => {
+    const type = typeField.value;
+    const config = type === 'children' ? choices[1] :
+      type === 'shower' && isWeekend(dateField.value) ? choices[0] : null;
+    if (!config || !dateField.value) return;
+    const value = config.field.value;
+    let error = !value ? 'Please select a time slot or request another time.' : '';
+    if (!error && value !== 'other' && state === 'ready' &&
+        snapshotIsCurrent(snapshot, Date.now())) {
+      const [begin, end] = value.split('|');
+      if (availabilityFor(snapshot, dateField.value, begin, end) === 'booked') {
+        error = 'That time is booked. Please choose another date or request another time.';
+      }
+    }
+    if (!error) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    chosenBookedWarnings[config.label] = error;
+    if (value && value !== 'other') config.field.value = '';
+    render();
+    config.host.scrollIntoView({behavior: 'smooth', block: 'center'});
+  }, true);
   for (const field of [startField, endField]) field.addEventListener('input', changed);
   refresh.addEventListener('click', () => load(true));
   changed();
