@@ -256,218 +256,336 @@
   <footer>© <span id="year">2026</span> The Dream Room · 69 Karwood Drive, Paradise, NL</footer>
 
   <script>
-    // Hide the standalone header and sidebar when embedded on GoDaddy.
-    if (new URLSearchParams(window.location.search).get('embed') === '1') {
-      document.body.classList.add('embed-view');
-    }
-    // Existing Dream Room Web3Forms key, retained from the original repository.
-    const WEB3FORMS_ACCESS_KEY = 'c3d8b41d-1390-485b-a9ba-c5c79ae9c057';
-    const form = document.getElementById('bookingForm');
-    const typeInput = document.getElementById('eventType');
-    const sections = Array.from(document.querySelectorAll('[data-section]'));
-    const schedule = document.getElementById('scheduleBlock');
-    const scheduleHeading = document.getElementById('scheduleHeading');
-    const extras = document.getElementById('extrasBlock');
-    const rawDate = document.getElementById('rawDate');
-    const backupDate = document.getElementById('backupDate');
-    const start = document.getElementById('startTime');
-    const end = document.getElementById('endTime');
-    const count = document.getElementById('guestCount');
-    const privateOccasionBlock = document.getElementById('privateOccasionBlock');
-    const privateOccasion = document.getElementById('privateType');
-    const sundayShowerReminder = document.getElementById('sundayShowerReminder');
-    const sundayShowerBlock = document.getElementById('sundayShowerBlock');
-    const showerOption = document.getElementById('showerBookingOption');
-    const showerSlotBlock = document.getElementById('sundayShowerSlotsBlock');
-    const showerSlot = document.getElementById('sundayShowerSlot');
-    const childSlotsBlock = document.getElementById('childSlotsBlock');
-    const childSlot = document.getElementById('childTimeSlot');
-    const customTimesBlock = document.getElementById('customTimesBlock');
-    const durationHint = document.getElementById('durationHint');
-    const feedback = document.getElementById('feedback');
-    const submitBtn = document.getElementById('submitBtn');
-    document.getElementById('year').textContent = new Date().getFullYear();
 
-    // Use the browser's local date, not UTC, to avoid disabling today's date at night in NL.
-    const d = new Date();
-    const today = [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-');
-    rawDate.min = today;
-    backupDate.min = today;
+  // GoDaddy embed mode removes duplicate page branding.
+  if (new URLSearchParams(window.location.search).get('embed') === '1') {
+    document.body.classList.add('embed-view');
+  }
+  const WEB3FORMS_ACCESS_KEY = 'c3d8b41d-1390-485b-a9ba-c5c79ae9c057';
+  const form = document.getElementById('bookingForm');
+  const get = id => document.getElementById(id);
+  const typeInput = get('eventType');
+  const sections = Array.from(document.querySelectorAll('[data-section]'));
+  const schedule = get('scheduleBlock');
+  const scheduleHeading = get('scheduleHeading');
+  const extras = get('extrasBlock');
+  const rawDate = get('rawDate');
+  const backupDate = get('backupDate');
+  const start = get('startTime');
+  const end = get('endTime');
+  const count = get('guestCount');
+  const showerBlock = get('showerBookingBlock');
+  const showerChoice = get('showerTimeChoice');
+  const weekdayShowerHint = get('weekdayShowerHint');
+  const childSlotsBlock = get('childSlotsBlock');
+  const childSlot = get('childTimeSlot');
+  const customTimesBlock = get('customTimesBlock');
+  const durationHint = get('durationHint');
+  const feedback = get('feedback');
+  const submitBtn = get('submitBtn');
+  const estimateBox = get('estimateBox');
+  const staffCheck = get('staffAddon');
+  const staffHours = get('staffHours');
+  const cocktailCheck = get('cocktailAddon');
+  const cocktailQty = get('cocktailQty');
+  const cleanCheck = get('cleanAddon');
+  const decorCheck = get('decorAddon');
+  const entertainmentCheck = get('entertainmentAddon');
+  const HST_RATE = 0.15;
+  const money = amount => Number(amount).toLocaleString('en-CA', {style:'currency', currency:'CAD'});
+  let estimatedAmounts = null;
+  let selectedType = '';
+  get('year').textContent = new Date().getFullYear();
 
-    function prettyDate(iso) {
-      if (!iso) return '';
-      const [y,m,day] = iso.split('-').map(Number);
-      return new Date(y, m-1, day).toLocaleDateString('en-CA', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
-    }
+  const todayDate = new Date();
+  const today = [todayDate.getFullYear(), String(todayDate.getMonth()+1).padStart(2,'0'), String(todayDate.getDate()).padStart(2,'0')].join('-');
+  rawDate.min = today;
+  backupDate.min = today;
 
-    function isSundayDate(iso) {
-      if (!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(iso)) return false;
-      const [year, month, day] = iso.split('-').map(Number);
-      return new Date(Date.UTC(year, month - 1, day)).getUTCDay() === 0;
+  function prettyDate(iso) {
+    if (!iso) return '';
+    const [y,m,day] = iso.split('-').map(Number);
+    return new Date(y,m-1,day).toLocaleDateString('en-CA', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  }
+  function isWeekend(iso) {
+    if (!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(iso)) return false;
+    const [y,m,d] = iso.split('-').map(Number);
+    const dow = new Date(Date.UTC(y,m-1,d)).getUTCDay();
+    return dow === 0 || dow === 6;
+  }
+  function weekendSpecialChosen() {
+    return typeInput.value === 'shower' && isWeekend(rawDate.value) &&
+      (showerChoice.value === '10:00|13:00' || showerChoice.value === '14:00|17:00');
+  }
+  function durationMinutes() {
+    if (!start.value || !end.value) return null;
+    const [sh,sm] = start.value.split(':').map(Number);
+    const [eh,em] = end.value.split(':').map(Number);
+    let mins = eh*60 + em - sh*60 - sm;
+    if (mins <= 0) mins += 1440;
+    return mins;
+  }
+  function updateDuration() {
+    const mins = durationMinutes();
+    if (typeInput.value === 'children' && childSlot.value === 'other') {
+      durationHint.textContent = 'Please request a two-hour party window. Other hours require staff approval.';
+    } else if (typeInput.value === 'children') {
+      durationHint.textContent = 'Two-hour party slots are requests and subject to approval.';
+    } else if (weekendSpecialChosen()) {
+      durationHint.textContent = 'Weekend shower special includes three hours for setup, decorating, event and cleanup.';
+    } else {
+      durationHint.textContent = mins === null
+        ? 'Include setup, decorating, cleanup and takedown in your requested hours.'
+        : 'Requested access: ' + (mins/60).toLocaleString('en-CA', {maximumFractionDigits:2}) +
+          ' hours' + (end.value <= start.value ? ' (ends the following day)' : '') + '. Includes your setup and cleanup time.';
     }
-    function sundaySpecialEligible() {
-      return typeInput.value === 'private' &&
-        (privateOccasion.value === 'Baby shower' || privateOccasion.value === 'Bridal shower') &&
-        isSundayDate(rawDate.value);
+    updateEstimate();
+  }
+  function refreshBookingTimes() {
+    const type = typeInput.value;
+    const hasType = Boolean(type);
+    const isHost = type === 'host';
+    const isChild = type === 'children';
+    const isShower = type === 'shower';
+    const eligible = isShower && isWeekend(rawDate.value);
+    const wasFixed = start.readOnly;
+    showerBlock.hidden = !eligible;
+    weekdayShowerHint.hidden = !isShower || eligible || !rawDate.value;
+    showerChoice.disabled = !eligible;
+    showerChoice.required = eligible;
+    if (!eligible) showerChoice.value = '';
+    childSlotsBlock.hidden = !isChild;
+    childSlot.disabled = !isChild;
+    childSlot.required = isChild;
+    if (!isChild) childSlot.value = '';
+    const fixedChild = isChild && childSlot.value && childSlot.value !== 'other';
+    const special = weekendSpecialChosen();
+    const fixed = Boolean(fixedChild || special);
+    const waitForChoice = (eligible && !showerChoice.value) || (isChild && !childSlot.value);
+    customTimesBlock.hidden = !hasType || isHost || fixed || waitForChoice;
+    start.required = hasType && !isHost && !fixed && !waitForChoice;
+    end.required = hasType && !isHost && !fixed && !waitForChoice;
+    if (fixed) {
+      const slot = special ? showerChoice.value : childSlot.value;
+      const [begin,finish] = slot.split('|');
+      start.value = begin;
+      end.value = finish;
+      start.readOnly = true;
+      end.readOnly = true;
+    } else {
+      start.readOnly = false;
+      end.readOnly = false;
+      if (wasFixed) { start.value = ''; end.value = ''; }
     }
-    function refreshBookingTimes() {
-      const isHost = typeInput.value === 'host';
-      const isChild = typeInput.value === 'children';
-      const isOtherChildTime = isChild && childSlot.value === 'other';
-      const eligible = sundaySpecialEligible();
-      const isShower = typeInput.value === 'private' &&
-        (privateOccasion.value === 'Baby shower' || privateOccasion.value === 'Bridal shower');
-      sundayShowerReminder.hidden = !isShower || eligible;
-      const wasFixed = start.readOnly;
-      sundayShowerBlock.hidden = !eligible;
-      showerOption.disabled = !eligible;
-      showerOption.required = eligible;
-      if (!eligible) { showerOption.value = ''; showerSlot.value = ''; }
-      const isSpecial = eligible && showerOption.value === 'special';
-      showerSlotBlock.hidden = !isSpecial;
-      showerSlot.disabled = !isSpecial;
-      showerSlot.required = isSpecial;
-      if (!isSpecial) showerSlot.value = '';
-      childSlotsBlock.hidden = !isChild;
-      childSlot.disabled = !isChild;
-      childSlot.required = isChild;
-      if (!isChild) childSlot.value = '';
-      const fixed = (isChild && !isOtherChildTime) || isSpecial;
-      const waitingForOption = eligible && !showerOption.value;
-      customTimesBlock.hidden = isHost || fixed || waitingForOption;
-      start.required = !isHost && !fixed && !waitingForOption;
-      end.required = !isHost && !fixed && !waitingForOption;
-      if (fixed) {
-        const selected = isChild ? childSlot.value : showerSlot.value;
-        const parts = selected ? selected.split('|') : ['', ''];
-        start.value = parts[0];
-        end.value = parts[1];
-        start.readOnly = true;
-        end.readOnly = true;
-      } else {
-        start.readOnly = false;
-        end.readOnly = false;
-        if (wasFixed) { start.value = ''; end.value = ''; }
-      }
-      if (isOtherChildTime) {
-        durationHint.textContent = 'Request a two-hour party at another time. Nonstandard hours require approval and are not guaranteed.';
-      } else if (isChild) {
-        durationHint.textContent = 'Choose one of our two-hour party slots. Booking times are subject to confirmation.';
-      } else if (isSpecial) {
-        durationHint.textContent = 'The Sunday special is a three-hour rental, including setup, decorating, cleanup and takedown.';
-      } else {
-        updateDuration();
-      }
-      durationHint.hidden = isHost || waitingForOption;
+    durationHint.hidden = !hasType || isHost || waitForChoice;
+    if (hasType && !isHost && !waitForChoice) updateDuration();
+    else updateEstimate();
+  }
+  function changeType() {
+    const type = typeInput.value;
+    const hasType = Boolean(type);
+    const isHost = type === 'host';
+    const booking = hasType && !isHost;
+    if (selectedType !== type) {
+      start.value = '';
+      end.value = '';
+      start.readOnly = false;
+      showerChoice.value = '';
+      childSlot.value = '';
+      selectedType = type;
     }
-    function changeType() {
-      const t = typeInput.value;
-      const isHost = t === 'host';
-      const isPrivate = t === 'private';
-      privateOccasionBlock.hidden = !isPrivate;
-      privateOccasion.disabled = !isPrivate;
-      privateOccasion.required = isPrivate;
-      sections.forEach(section => {
-        const active = section.dataset.section === t;
-        section.hidden = !active;
-        section.disabled = !active;
-        section.querySelectorAll('[data-required]').forEach(input => { input.required = active; });
-      });
-      document.getElementById('specificHeading').hidden = !t;
-      schedule.hidden = isHost;
-      scheduleHeading.hidden = isHost;
-      extras.hidden = isHost;
-      schedule.querySelectorAll('input').forEach(input => { input.disabled = isHost; });
-      extras.querySelectorAll('input, textarea').forEach(input => { input.disabled = isHost; });
-      [rawDate,count].forEach(input => { input.required = !isHost; });
-      refreshBookingTimes();
-      feedback.hidden = true;
-    }
-    typeInput.addEventListener('change', changeType);
-    privateOccasion.addEventListener('change', refreshBookingTimes);
-    rawDate.addEventListener('change', refreshBookingTimes);
-    showerOption.addEventListener('change', refreshBookingTimes);
-    showerSlot.addEventListener('change', refreshBookingTimes);
-    childSlot.addEventListener('change', refreshBookingTimes);
-    changeType();
-
-    function durationMinutes() {
-      if (!start.value || !end.value) return null;
-      const [sh,sm] = start.value.split(':').map(Number);
-      const [eh,em] = end.value.split(':').map(Number);
-      let minutes = eh*60+em - (sh*60+sm);
-      if (minutes <= 0) minutes += 24*60; // midnight end times are next-day access
-      return minutes;
-    }
-    function updateDuration() {
-      const mins = durationMinutes();
-      document.getElementById('durationHint').textContent = mins === null
-        ? 'Please include any setup, decorating, cleanup and takedown time in your requested hours.'
-        : `Requested access: ${(mins/60).toLocaleString('en-CA',{maximumFractionDigits:2})} hours${end.value <= start.value ? ' (ends the following day)' : ''}. Include setup and cleanup time.`;
-    }
-    start.addEventListener('change', updateDuration);
-    end.addEventListener('change', updateDuration);
-
-    function showFeedback(message) {
-      feedback.textContent = message;
-      feedback.className = 'feedback error';
-      feedback.hidden = false;
-      feedback.scrollIntoView({block:'nearest',behavior:'smooth'});
-    }
-    form.addEventListener('submit', async event => {
-      event.preventDefault();
-      feedback.hidden = true;
-      if (!form.reportValidity()) return;
-      const isHost = typeInput.value === 'host';
-      if (!isHost) {
-        if (rawDate.value < today || (backupDate.value && backupDate.value < today)) { showFeedback('Please select a future date.'); rawDate.focus(); return; }
-        if (sundaySpecialEligible() && showerOption.value === 'special' && backupDate.value && !isSundayDate(backupDate.value)) {
-          showFeedback('Please choose a Sunday for your alternate date or leave it blank for the Sunday special.'); backupDate.focus(); return;
-        }
-        const mins = durationMinutes();
-        if (typeInput.value === 'children' && childSlot.value === 'other' && mins !== 120) {
-          showFeedback("Please request a two-hour window for your children's party. Other times require approval.");
-          start.focus();
-          return;
-        }
-        if (mins === null || mins > 16*60) { showFeedback('Please double-check your start and end times. For rentals longer than 16 hours, contact our team directly.'); start.focus(); return; }
-        if (typeInput.value === 'children' && document.getElementById('childNumber').value && Number(document.getElementById('childNumber').value) > Number(count.value)) {
-          showFeedback('The number of children cannot exceed the total guest count.'); count.focus(); return;
-        }
-        if (typeInput.value === 'wedding' && document.getElementById('weddingType').value.includes('Ceremony') && Number(document.getElementById('ceremonyCount').value) > 32) {
-          showFeedback('Our standard ceremony seating is limited to 32 people. Please include your preferred alternative in the notes.'); return;
-        }
-      }
-      document.getElementById('prettyDate').value = prettyDate(rawDate.value);
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Sending your request…';
-      const data = new FormData(form);
-      if (typeInput.value === 'children' && childSlot.value) {
-        data.set("Children's party time slot", childSlot.value === 'other'
-          ? 'Other time requested (requires staff approval)'
-          : childSlot.options[childSlot.selectedIndex].textContent.trim());
-      }
-      if (sundaySpecialEligible() && showerOption.value === 'special' && showerSlot.value) {
-        data.set('Sunday shower time slot', showerSlot.options[showerSlot.selectedIndex].textContent.trim());
-      }
-      const addOns = data.getAll('Add-ons');
-      data.delete('Add-ons');
-      if (addOns.length) data.append('Requested add-ons', addOns.join(', '));
-      if (!isHost) data.append('Requested access duration', String(durationMinutes()/60) + ' hours');
-      if (!isHost && backupDate.value) { data.set('Alternate date', prettyDate(backupDate.value)); }
-      data.append('access_key', WEB3FORMS_ACCESS_KEY);
-      try {
-        const response = await fetch('https://api.web3forms.com/submit', { method:'POST', body:data, headers:{Accept:'application/json'} });
-        const result = await response.json();
-        if (!response.ok || !result.success) throw new Error(result.message || 'Unable to submit');
-        window.location.assign('thank-you.html');
-      } catch (error) {
-        console.error('Dream Room form submission failed:', error);
-        showFeedback('We could not send your request. Please check your connection and try again, or email us at DreamRoomNL@gmail.com.');
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Send booking inquiry';
-      }
+    sections.forEach(section => {
+      const active = section.dataset.section === type || (type === 'shower' && section.dataset.section === 'private');
+      section.hidden = !active;
+      section.disabled = !active;
+      section.querySelectorAll('[data-required]').forEach(input => { input.required = active; });
     });
+    get('specificHeading').hidden = !hasType;
+    schedule.hidden = !booking;
+    scheduleHeading.hidden = !booking;
+    extras.hidden = !booking;
+    [rawDate, backupDate, start, end, count].forEach(input => { input.disabled = !booking; });
+    rawDate.required = booking;
+    count.required = booking;
+    refreshBookingTimes();
+    feedback.hidden = true;
+    updateEstimate();
+  }
+  function updateAddOnFields() {
+    get('staffHoursBlock').hidden = !staffCheck.checked;
+    staffHours.disabled = !staffCheck.checked;
+    staffHours.required = staffCheck.checked;
+    get('cocktailQtyBlock').hidden = !cocktailCheck.checked;
+    cocktailQty.disabled = !cocktailCheck.checked;
+    cocktailQty.required = cocktailCheck.checked;
+    updateEstimate();
+  }
+  function estimate() {
+    const type = typeInput.value;
+    if (!type || type === 'host' || !rawDate.value || rawDate.value < today) return null;
+    const mins = durationMinutes();
+    if (mins === null || mins > 960 || (type === 'children' && mins !== 120)) return null;
+    if (type === 'children' && !childSlot.value) return null;
+    if (type === 'shower' && isWeekend(rawDate.value) && !showerChoice.value) return null;
+    const lines = [];
+    const add = (label,min,max=min) => lines.push({label,min,max});
+    const base = weekendSpecialChosen() ? 350 : mins / 60 * 150;
+    add(weekendSpecialChosen() ? 'Weekend shower special (3 hours)' : 'Venue rental (' + (mins/60).toLocaleString('en-CA',{maximumFractionDigits:2}) + ' hours × $150)', base);
+    document.querySelectorAll('#addOnChoices input[data-price]:checked').forEach(el => {
+      add(el.value, Number(el.dataset.price));
+    });
+    if (staffCheck.checked) {
+      const hrs = Number(staffHours.value);
+      if (!Number.isFinite(hrs) || hrs < 1 || hrs > 16 || (hrs*2)%1 !== 0) return null;
+      add('Event staff (' + hrs + ' hours × $25)', hrs*25);
+    }
+    if (cocktailCheck.checked) {
+      const qty = Number(cocktailQty.value);
+      if (!Number.isInteger(qty) || qty < 1 || qty > 10) return null;
+      add('Cocktail tables (' + qty + ' × $20)',qty*20);
+    }
+    if (cleanCheck.checked) add('Post-event cleanup',50,100);
+    if (decorCheck.checked) add('Additional décor (starting amount)',25);
+    const subtotalMin = lines.reduce((sum,l)=>sum+l.min,0);
+    const subtotalMax = lines.reduce((sum,l)=>sum+l.max,0);
+    const taxMin = Math.round(subtotalMin * HST_RATE * 100)/100;
+    const taxMax = Math.round(subtotalMax * HST_RATE * 100)/100;
+    return {lines,subtotalMin,subtotalMax,taxMin,taxMax,
+      totalMin:subtotalMin+taxMin,totalMax:subtotalMax+taxMax,
+      customQuote:entertainmentCheck.checked,decorVariable:decorCheck.checked,
+      wedding: type === 'wedding'};
+  }
+  function updateEstimate() {
+    const type = typeInput.value;
+    estimateBox.hidden = !type || type === 'host';
+    if (estimateBox.hidden) {estimatedAmounts=null;return;}
+    estimatedAmounts = estimate();
+    const rows = get('estimateRows');
+    rows.replaceChildren();
+    if (!estimatedAmounts) {
+      get('estimateSubtotal').textContent = '—';
+      get('estimateTax').textContent = '—';
+      get('estimateTotal').textContent = '—';
+      get('estimateNotes').textContent = 'Choose a date, time slot and any add-on quantities to view your estimate.';
+      return;
+    }
+    const e = estimatedAmounts;
+    e.lines.forEach(line => {
+      const row = document.createElement('div');
+      row.className='estimate-row';
+      const title = document.createElement('span');
+      const amount = document.createElement('strong');
+      title.textContent=line.label;
+      amount.textContent=line.min===line.max ? money(line.min) : money(line.min)+'–'+money(line.max);
+      row.append(title,amount);
+      rows.append(row);
+    });
+    const asRange=(a,b)=>a===b?money(a):money(a)+'–'+money(b);
+    get('estimateSubtotal').textContent=asRange(e.subtotalMin,e.subtotalMax);
+    get('estimateTax').textContent=asRange(e.taxMin,e.taxMax);
+    get('estimateTotal').textContent=asRange(e.totalMin,e.totalMax);
+    const notes=['Estimate only. Not a confirmed booking, payment or final quote.'];
+    if (e.subtotalMin!==e.subtotalMax) notes.push('Cleanup is quoted between $50 and $100.');
+    if (e.decorVariable) notes.push('Décor estimate includes a $25 starting allowance; custom décor may cost more.');
+    if (e.customQuote) notes.push('Photography and character entertainment are not included until separately quoted.');
+    if (e.wedding) notes.push('Styled and staffed wedding packages require a separate quote.');
+    get('estimateNotes').textContent=notes.join(' ');
+  }
+  function showFeedback(message) {
+    feedback.textContent=message;
+    feedback.className='feedback error';
+    feedback.hidden=false;
+    feedback.scrollIntoView({block:'nearest',behavior:'smooth'});
+  }
+
+  typeInput.addEventListener('change',changeType);
+  rawDate.addEventListener('change',refreshBookingTimes);
+  showerChoice.addEventListener('change',refreshBookingTimes);
+  childSlot.addEventListener('change',refreshBookingTimes);
+  start.addEventListener('change',updateDuration);
+  end.addEventListener('change',updateDuration);
+  form.addEventListener('change',event => {
+    if (event.target === typeInput || event.target === rawDate ||
+        event.target === showerChoice || event.target === childSlot ||
+        event.target === start || event.target === end) return;
+    updateEstimate();
+  });
+  form.addEventListener('input',event => {
+    if (event.target === staffHours || event.target === cocktailQty) updateEstimate();
+    if (event.target === start || event.target === end) updateDuration();
+  });
+  document.querySelectorAll('#addOnChoices input').forEach(el => {
+    el.addEventListener('change',updateAddOnFields);
+  });
+  updateAddOnFields();
+  changeType();
+
+  form.addEventListener('submit',async event => {
+    event.preventDefault();
+    feedback.hidden=true;
+    if (!form.reportValidity()) return;
+    const type=typeInput.value;
+    const isHost=type==='host';
+    if (!isHost) {
+      if (rawDate.value<today || (backupDate.value && backupDate.value<today)) {
+        showFeedback('Please choose a future date.');rawDate.focus();return;
+      }
+      if (weekendSpecialChosen() && backupDate.value && !isWeekend(backupDate.value)) {
+        showFeedback('Choose a Saturday or Sunday for your alternate special-rate date, or leave it blank.');backupDate.focus();return;
+      }
+      const mins=durationMinutes();
+      if (mins===null || mins>960) {
+        showFeedback('Please check the start and end times. For rentals longer than 16 hours, email the team.');start.focus();return;
+      }
+      if (type==='children' && mins!==120) {
+        showFeedback('Please request a two-hour window for a children\'s party.');start.focus();return;
+      }
+      if (type==='children' && get('childNumber').value && Number(get('childNumber').value)>Number(count.value)) {
+        showFeedback('The number of children cannot exceed the total guest count.');count.focus();return;
+      }
+      if (type==='wedding' && get('weddingType').value.includes('Ceremony') && Number(get('ceremonyCount').value)>32) {
+        showFeedback('Standard ceremony seating accommodates 32. Please describe alternative seating needs in notes.');return;
+      }
+      if (!estimatedAmounts) {
+        showFeedback('Please choose your dates, times and add-on quantities to calculate the estimate.');return;
+      }
+    }
+    get('prettyDate').value=prettyDate(rawDate.value);
+    submitBtn.disabled=true;
+    submitBtn.textContent='Sending your request…';
+    const data=new FormData(form);
+    if (type==='children' && childSlot.value) {
+      data.set('Children\'s party time slot',childSlot.value==='other'?'Other time requested (staff approval required)':childSlot.options[childSlot.selectedIndex].textContent.trim());
+    }
+    if (weekendSpecialChosen()) {
+      data.set('Shower rental time',showerChoice.options[showerChoice.selectedIndex].textContent.trim());
+    } else if (type==='shower') {
+      data.set('Shower rental time','Standard hourly rental (other requested times)');
+    }
+    const extras=data.getAll('Add-ons');
+    data.delete('Add-ons');
+    if (extras.length) data.set('Requested add-ons',extras.join(', '));
+    if (!isHost) {
+      data.set('Requested access duration',String(durationMinutes()/60)+' hours');
+      if (backupDate.value) data.set('Alternate date',prettyDate(backupDate.value));
+      data.set('Estimated subtotal',money(estimatedAmounts.subtotalMin)+(estimatedAmounts.subtotalMax===estimatedAmounts.subtotalMin?'':'–'+money(estimatedAmounts.subtotalMax)));
+      data.set('Estimated total incl HST',money(estimatedAmounts.totalMin)+(estimatedAmounts.totalMax===estimatedAmounts.totalMin?'':'–'+money(estimatedAmounts.totalMax)));
+      data.set('Estimate disclaimer','Preliminary estimate only; subject to final quote and date approval.');
+    }
+    data.append('access_key',WEB3FORMS_ACCESS_KEY);
+    try {
+      const response=await fetch('https://api.web3forms.com/submit',{method:'POST',body:data,headers:{Accept:'application/json'}});
+      const result=await response.json();
+      if(!response.ok || !result.success)throw Error(result.message||'Unable to submit');
+      window.location.assign('thank-you.html');
+    } catch(error) {
+      console.error('Dream Room form submission failed:',error);
+      showFeedback('We could not send your request. Please try again or email DreamRoomNL@gmail.com.');
+      submitBtn.disabled=false;
+      submitBtn.textContent='Send booking inquiry';
+    }
+  });
+
   </script>
 </body>
 </html>
