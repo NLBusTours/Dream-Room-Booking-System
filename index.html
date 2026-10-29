@@ -125,6 +125,12 @@
     .slot-helper {font-size:.81rem;color:#695b64;line-height:1.5;margin:7px 0 8px;}
     .slot-helper.error {color:#963d59;font-weight:650;}
     @media (max-width:480px) {.slot-choice{gap:7px;padding:12px 10px;}.slot-choice .slot-title{font-size:.85rem;}}
+    .daily-unavailability {margin:12px 0 16px;padding:14px 16px;background:#fbf5f9;border:1px solid #e6d2dc;border-radius:12px;}
+    .daily-unavailability[hidden] {display:none !important;}
+    .daily-unavailability-title {margin:0 0 6px;font-weight:750;color:var(--rose-dark);font-size:.94rem;}
+    .daily-booked-hours {margin:5px 0;font-size:.87rem;color:#644d5a;line-height:1.55;}
+    .daily-turnover {margin:6px 0;font-size:.85rem;color:#713d59;}
+    .daily-unavailability .hint {font-size:.76rem;margin:6px 0 0;}
     .availability-checker {margin:16px 0 18px;padding:17px;background:#fffafd;border:1px solid #e7d3df;border-radius:14px;}
     .availability-head {display:flex;align-items:center;justify-content:space-between;gap:12px;}
     .availability-head h3 {margin:4px 0 6px;color:var(--rose-dark);font-size:1.3rem;}
@@ -138,6 +144,7 @@
     .availability-tag.available {color:#26704c;background:#eaf4ed;}
     .availability-tag.booked {color:#8f3451;background:#f9e7ec;}
     .availability-tag.unknown {color:#685d63;background:#f2edf0;}
+    .availability-tag.turnover {color:#815321;background:#fff0dd;}
     #weddingPackageBlock p { color:#685763; font-size:.9rem; }
     #weddingPackageBlock p strong { color:var(--rose-dark); }
     #weddingIncludedNotice { margin-top:10px; }
@@ -236,6 +243,12 @@
             <div class="field"><label for="rawDate">Preferred date <span class="req">*</span></label><input id="rawDate" type="date" required><input id="prettyDate" type="hidden" name="Date"></div>
             <div class="field"><label for="backupDate">Alternate date (optional)</label><input id="backupDate" type="date" name="Alternate date"></div>
           </div>
+          <section id="dailyUnavailability" class="daily-unavailability" hidden aria-label="Unavailable booking hours for selected date">
+            <p class="daily-unavailability-title">Unavailable hours for your date</p>
+            <p id="dailyBookedHours" class="daily-booked-hours" role="status" aria-live="polite">Checking occupied hours…</p>
+            <p class="daily-turnover"><strong>1:00–2:00 PM</strong> · Daily switchover, not bookable</p>
+            <p class="hint">We display occupied calendar times only, never guest names or booking details. All other times remain subject to confirmation.</p>
+          </section>
           <div id="showerBookingBlock" class="section" hidden>
             <h3>Weekend three-hour shower special</h3>
             <p class="hint">Baby and bridal showers only. Saturdays and Sundays offer a $350 three-hour special at either of the times below. Other times are $150/hour.</p>
@@ -380,7 +393,7 @@
 
         <div class="form-step"><span class="number">✓</span> Final notes</div>
         <div class="field"><label for="notes">Additional details or questions</label><textarea id="notes" name="Notes" placeholder="Anything else our team should know?"></textarea></div>
-        <div class="notice">Our standard venue rental is <strong>$150/hour</strong>. The Saturday/Sunday three-hour shower special is <strong>$350</strong> at the listed daytime slots only. Prices are before 15% HST. This is a booking <strong>inquiry</strong>, not a confirmed reservation. Our team will review availability and send a quote. Rental time must include setup and cleanup unless arrangements are made separately.</div>
+        <div class="notice">Our standard venue rental is <strong>$150/hour</strong>. The Saturday/Sunday three-hour shower special is <strong>$350</strong> at the listed daytime slots only. Prices are before 15% HST. This is a booking <strong>inquiry</strong>, not a confirmed reservation. Our team will review availability and send a quote. Rental time must include setup and cleanup unless arrangements are made separately. <strong>1–2 PM is reserved daily for venue switchover and cannot be booked.</strong></div>
         <label class="check consent"><input id="ack" type="checkbox" name="Acknowledgement" value="Agreed" required> I understand that submitting this request does not reserve my date. <span class="req">*</span></label>
         <button id="submitBtn" class="submit" type="submit">Send booking inquiry</button>
         <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
@@ -581,6 +594,15 @@
     if (mins <= 0) mins += 1440;
     return mins;
   }
+  function overlapsDailySwitchover() {
+    if (!start.value || !end.value) return false;
+    const [sh,sm] = start.value.split(':').map(Number);
+    const [eh,em] = end.value.split(':').map(Number);
+    const first = sh*60+sm, last = eh*60+em;
+    const overlaps = (a,b) => a < 840 && b > 780;
+    return last > first ? overlaps(first,last)
+      : overlaps(first,1440) || overlaps(0,last);
+  }
   function updateDuration() {
     const mins = durationMinutes();
     if (isStyledWedding()) {
@@ -686,7 +708,8 @@
     const type = typeInput.value;
     if (!type || type === 'host' || !rawDate.value || rawDate.value < today) return null;
     const mins = durationMinutes();
-    if (mins === null || mins > 960 || (type === 'children' && mins !== 120)) return null;
+    if (mins === null || mins > 960 || overlapsDailySwitchover() ||
+        (type === 'children' && mins !== 120)) return null;
     if (type === 'children' && !childSlot.value) return null;
     if (type === 'shower' && isWeekend(rawDate.value) && !showerChoice.value) return null;
     if (type === 'wedding') {
@@ -745,6 +768,10 @@
       const requiredHours = selectedWeddingHours();
       get('estimateNotes').textContent = type === 'wedding' && !weddingPackage.value
         ? 'Choose a wedding rental package and your preferred access times to see your estimate.'
+        : durationMinutes() !== null && durationMinutes() > 960
+        ? 'Your requested hours are invalid or exceed 16 hours. Please adjust your access times.'
+        : overlapsDailySwitchover()
+        ? '1:00–2:00 PM is reserved for our daily switchover and cannot be booked. Please choose hours ending by 1 PM or starting at 2 PM.'
         : type === 'wedding' && requiredHours !== null && durationMinutes() !== requiredHours*60
         ? 'Your selected wedding package includes exactly ' + requiredHours + ' hours. Adjust the start and end times to match.'
         : 'Choose a date, time slot and any add-on quantities to view your estimate.';
@@ -823,6 +850,9 @@
       const mins=durationMinutes();
       if (mins===null || mins>960) {
         showFeedback('Please check the start and end times. For rentals longer than 16 hours, email the team.');start.focus();return;
+      }
+      if (overlapsDailySwitchover()) {
+        showFeedback('1:00–2:00 PM is always reserved for our venue switchover. Please choose access hours outside this period.');start.focus();return;
       }
       if (type==='children' && mins!==120) {
         showFeedback('Please request a two-hour window for a children\'s party.');start.focus();return;
