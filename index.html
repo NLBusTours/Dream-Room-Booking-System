@@ -75,22 +75,25 @@
     .decor-photo-header strong {color:var(--rose-dark);font-size:.96rem;}
     .decor-photo-header p {margin:4px 0 11px;}
     .decor-photo-strip {display:flex;gap:10px;overflow-x:auto;padding:0 0 12px;scroll-snap-type:x mandatory;}
-    .decor-thumb {border:2px solid #e8cbd9;background:#faf0f6;border-radius:12px;overflow:hidden;padding:0;flex:0 0 120px;height:94px;scroll-snap-align:start;cursor:zoom-in;}
+    .decor-thumb {display:flex;flex-direction:column;border:2px solid #e8cbd9;background:#fffafd;border-radius:12px;overflow:hidden;padding:0;flex:0 0 145px;scroll-snap-align:start;cursor:zoom-in;}
     .decor-thumb:focus-visible,.decor-photo-button:focus-visible {outline:3px solid var(--rose-dark);outline-offset:2px;}
-    .decor-thumb img {display:block;width:100%;height:100%;object-fit:cover;}
+    .decor-tile-caption {font-size:.72rem;color:#6e405b;text-align:center;padding:7px 5px;line-height:1.3;font-weight:650;}
+    .decor-sprite {display:block;width:100%;height:100%;background-image:url('assets/real-dream-room-decor.webp');background-size:200% 200%;background-position:var(--photo-x,0%) var(--photo-y,0%);background-repeat:no-repeat;background-color:#f5eaf0;}
+    .decor-thumb>.decor-sprite {height:94px;flex:none;}
+    @media (hover:hover) and (pointer:fine) {.decor-thumb:hover>.decor-sprite{filter:brightness(1.06);}}
     .decor-addon-choice {display:flex;align-items:center;gap:9px;min-width:0;padding:7px;border:1px solid #ead9e3;border-radius:12px;background:#fff;}
     .decor-addon-choice .check {flex:1;border:0;background:none;padding:6px;min-width:0;}
     .decor-photo-button {position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;flex:none;width:90px;background:none;border:0;color:#74435d;font-size:.66rem;text-align:center;padding:0;cursor:zoom-in;text-decoration:none;}
     .decor-photo-image {position:relative;display:block;width:86px;height:70px;border-radius:10px;box-shadow:0 3px 9px rgba(76,32,54,.15);border:2px solid #e6cfdb;z-index:1;}
-    .decor-photo-button img {display:block;width:100%;height:100%;border-radius:8px;object-fit:cover;transition:transform .22s ease,box-shadow .22s ease;}
+    .decor-photo-button .decor-sprite {border-radius:8px;transition:transform .22s ease,box-shadow .22s ease;}
     .decor-zoom-icon {position:absolute;right:3px;bottom:3px;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.94);box-shadow:0 1px 4px #5f34494d;color:#7c3c62;font-weight:900;font-size:1rem;}
     .decor-preview-caption {line-height:1.25;max-width:100%;}
     @media (hover:hover) and (pointer:fine) {
       .decor-photo-button:hover {z-index:20;}
-      .decor-photo-button:hover img {transform:scale(2.35);box-shadow:0 9px 26px rgba(50,25,42,.3);position:relative;z-index:20;transform-origin:right center;}
+      .decor-photo-button:hover .decor-sprite {transform:scale(2.35);box-shadow:0 9px 26px rgba(50,25,42,.3);position:relative;z-index:20;transform-origin:right center;}
       .decor-photo-button:hover .decor-zoom-icon {z-index:21;}
     }
-    @media (prefers-reduced-motion:reduce) {.decor-photo-button img{transition:none;}}
+    @media (prefers-reduced-motion:reduce) {.decor-photo-button .decor-sprite{transition:none;}}
     @media (max-width:580px) {.decor-addon-choice {min-height:95px;} .decor-photo-button{width:98px;} .decor-photo-image{width:92px;height:74px;}}
 
     .decor-photo-dialog {width:min(94vw,780px);max-height:90vh;border:1px solid #e4c9d7;border-radius:16px;background:#fff9fc;color:var(--ink);padding:16px;}
@@ -98,7 +101,7 @@
     .decor-dialog-heading {display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px;color:var(--rose-dark);}
     .decor-dialog-heading button {border:1px solid #ddc1cf;border-radius:9px;padding:8px;background:white;cursor:pointer;}
     .decor-dialog-main {display:grid;grid-template-columns:40px minmax(0,1fr) 40px;gap:7px;align-items:center;}
-    .decor-dialog-main img {max-height:60vh;width:100%;object-fit:contain;border-radius:10px;}
+    .decor-expanded-sprite {width:100%;max-height:60vh;aspect-ratio:4/3;border-radius:10px;background-image:url('assets/real-dream-room-decor.webp');background-size:200% 200%;background-position:0% 0%;background-repeat:no-repeat;}
     .decor-dialog-main button {border:1px solid #e0d0d8;background:#fff;border-radius:9px;padding:9px 3px;cursor:pointer;}
     .decor-photo-dialog .hint {text-align:center;}
     #weddingPackageBlock p { color:#685763; font-size:.9rem; }
@@ -174,14 +177,13 @@
           </div>
           <div class="decor-photos" aria-label="Dream Room venue styling photo gallery">
             <div class="decor-photo-header">
-              <div><strong>Take a look at our décor</strong><p class="hint">Real photos from our venue gallery. Tap a photo to enlarge. Specific décor combinations and availability may vary.</p></div>
+              <div><strong>Take a look at our décor</strong><p class="hint">Actual photos of our wedding décor. Hover on desktop or tap on mobile to see a larger preview. Layouts may vary.</p></div>
             </div>
             <div class="decor-photo-strip">
-              <button class="decor-thumb" type="button" data-photo-index="0" aria-label="Enlarge Dream Room venue photo 1 of 5"><img loading="lazy" src="https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000013660.jpg/:/rs=w:1300,h:800" alt="The Dream Room venue décor photo 1" width="160" height="110"></button>
-              <button class="decor-thumb" type="button" data-photo-index="1" aria-label="Enlarge Dream Room venue photo 2 of 5"><img loading="lazy" src="https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000013663.jpg/:/rs=w:1300,h:800" alt="The Dream Room venue décor photo 2" width="160" height="110"></button>
-              <button class="decor-thumb" type="button" data-photo-index="2" aria-label="Enlarge Dream Room venue photo 3 of 5"><img loading="lazy" src="https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000034727.jpg/:/rs=w:1300,h:800" alt="The Dream Room venue décor photo 3" width="160" height="110"></button>
-              <button class="decor-thumb" type="button" data-photo-index="3" aria-label="Enlarge Dream Room venue photo 4 of 5"><img loading="lazy" src="https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000037118.jpg/:/rs=w:1300,h:800" alt="The Dream Room venue décor photo 4" width="160" height="110"></button>
-              <button class="decor-thumb" type="button" data-photo-index="4" aria-label="Enlarge Dream Room venue photo 5 of 5"><img loading="lazy" src="https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000015187.jpg/:/rs=w:1300,h:800" alt="The Dream Room venue décor photo 5" width="160" height="110"></button>
+              <button class="decor-thumb" type="button" data-photo-index="0" aria-label="Enlarge Aisle runner & ceremony styling photo"><span class="decor-sprite" style="--photo-x:0%;--photo-y:0%" aria-hidden="true"></span><span class="decor-tile-caption">Aisle runner & ceremony styling</span></button>
+              <button class="decor-thumb" type="button" data-photo-index="2" aria-label="Enlarge Wedding centrepieces photo"><span class="decor-sprite" style="--photo-x:0%;--photo-y:100%" aria-hidden="true"></span><span class="decor-tile-caption">Wedding centrepieces</span></button>
+              <button class="decor-thumb" type="button" data-photo-index="3" aria-label="Enlarge Table linens & chair covers photo"><span class="decor-sprite" style="--photo-x:100%;--photo-y:100%" aria-hidden="true"></span><span class="decor-tile-caption">Table linens & chair covers</span></button>
+              <button class="decor-thumb" type="button" data-photo-index="1" aria-label="Enlarge High-rise cocktail tables photo"><span class="decor-sprite" style="--photo-x:100%;--photo-y:0%" aria-hidden="true"></span><span class="decor-tile-caption">High-rise cocktail tables</span></button>
             </div>
           </div>
         </div>
@@ -280,30 +282,30 @@
             <label class="check"><input type="checkbox" id="cleanAddon" name="Add-ons" value="Post-event cleanup" data-wedding-included="true"> Cleanup · $50–$100</label>
             <div class="decor-addon-choice">
               <label class="check"><input type="checkbox" name="Add-ons" value="Linens" data-price="25" data-wedding-included="true"> Linens · $25</label>
-              <button class="decor-photo-button" type="button" data-view-decor data-photo-index="3" data-decor-label="Linens" aria-label="Enlarge linens preview">
-                <span class="decor-photo-image"><img src="https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000037118.jpg/:/rs=w:1300,h:800" alt="Detail from your venue: Linens" loading="lazy" width="120" height="88"><span class="decor-zoom-icon" aria-hidden="true">⌕</span></span>
-                <span class="decor-preview-caption">Detail from your venue · Tap to enlarge</span>
+              <button class="decor-photo-button" type="button" data-view-decor data-photo-index="3" data-decor-label="Linens" aria-label="Enlarge linens photo">
+                <span class="decor-photo-image"><span class="decor-sprite" style="--photo-x:100%;--photo-y:100%" aria-hidden="true"></span><span class="decor-zoom-icon" aria-hidden="true">⌕</span></span>
+                <span class="decor-preview-caption">Real venue photo · Tap to enlarge</span>
               </button>
             </div>
             <div class="decor-addon-choice">
               <label class="check"><input type="checkbox" name="Add-ons" value="Chair covers" data-price="25" data-wedding-included="true"> Chair covers · $25</label>
-              <button class="decor-photo-button" type="button" data-view-decor data-photo-index="3" data-decor-label="Chair covers" aria-label="Enlarge chair covers preview">
-                <span class="decor-photo-image"><img src="https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000037118.jpg/:/rs=w:1300,h:800" alt="Detail from your venue: Chair covers" loading="lazy" width="120" height="88"><span class="decor-zoom-icon" aria-hidden="true">⌕</span></span>
-                <span class="decor-preview-caption">Detail from your venue · Tap to enlarge</span>
+              <button class="decor-photo-button" type="button" data-view-decor data-photo-index="3" data-decor-label="Chair covers" aria-label="Enlarge chair covers photo">
+                <span class="decor-photo-image"><span class="decor-sprite" style="--photo-x:100%;--photo-y:100%" aria-hidden="true"></span><span class="decor-zoom-icon" aria-hidden="true">⌕</span></span>
+                <span class="decor-preview-caption">Real venue photo · Tap to enlarge</span>
               </button>
             </div>
             <div class="decor-addon-choice">
               <label class="check"><input type="checkbox" id="decorAddon" name="Add-ons" value="Additional decor"> Additional décor · from $25</label>
-              <button class="decor-photo-button" type="button" data-view-decor data-photo-index="0" data-decor-label="Additional décor" aria-label="Enlarge additional décor preview">
-                <span class="decor-photo-image"><img src="https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000013660.jpg/:/rs=w:1300,h:800" alt="Venue inspiration: Additional décor" loading="lazy" width="120" height="88"><span class="decor-zoom-icon" aria-hidden="true">⌕</span></span>
-                <span class="decor-preview-caption">Venue inspiration · Tap to enlarge</span>
+              <button class="decor-photo-button" type="button" data-view-decor data-photo-index="2" data-decor-label="Additional décor" aria-label="Enlarge additional décor photo">
+                <span class="decor-photo-image"><span class="decor-sprite" style="--photo-x:0%;--photo-y:100%" aria-hidden="true"></span><span class="decor-zoom-icon" aria-hidden="true">⌕</span></span>
+                <span class="decor-preview-caption">Centrepiece styling · Tap to enlarge</span>
               </button>
             </div>
             <div class="decor-addon-choice">
               <label class="check"><input type="checkbox" id="cocktailAddon" name="Add-ons" value="Cocktail tables"> Cocktail tables · $20 each</label>
-              <button class="decor-photo-button" type="button" data-view-decor data-photo-index="1" data-decor-label="Cocktail tables" aria-label="Enlarge cocktail tables preview">
-                <span class="decor-photo-image"><img src="https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000013663.jpg/:/rs=w:1300,h:800" alt="Venue inspiration: Cocktail tables" loading="lazy" width="120" height="88"><span class="decor-zoom-icon" aria-hidden="true">⌕</span></span>
-                <span class="decor-preview-caption">Venue inspiration · Tap to enlarge</span>
+              <button class="decor-photo-button" type="button" data-view-decor data-photo-index="1" data-decor-label="Cocktail tables" aria-label="Enlarge cocktail tables photo">
+                <span class="decor-photo-image"><span class="decor-sprite" style="--photo-x:100%;--photo-y:0%" aria-hidden="true"></span><span class="decor-zoom-icon" aria-hidden="true">⌕</span></span>
+                <span class="decor-preview-caption">Actual tables · Tap to enlarge</span>
               </button>
             </div>
             <label class="check"><input type="checkbox" id="entertainmentAddon" name="Add-ons" value="Photography / character entertainment"> Photography / character entertainment · custom quote</label>
@@ -350,37 +352,37 @@
 
   <dialog id="decorPhotoDialog" class="decor-photo-dialog" aria-label="Dream Room décor photo preview">
     <div class="decor-dialog-heading"><strong>Dream Room décor gallery</strong><button type="button" id="closeDecorGallery" aria-label="Close photo preview">✕ Close</button></div>
-    <div class="decor-dialog-main"><button id="prevDecorPhoto" type="button" aria-label="Previous décor photo">❮</button><img id="expandedDecorPhoto" alt="Large photograph of The Dream Room venue interior"><button id="nextDecorPhoto" type="button" aria-label="Next décor photo">❯</button></div>
+    <div class="decor-dialog-main"><button id="prevDecorPhoto" type="button" aria-label="Previous décor photo">❮</button><div id="expandedDecorPhoto" class="decor-expanded-sprite" role="img" aria-label="Enlarged Dream Room décor photograph"></div><button id="nextDecorPhoto" type="button" aria-label="Next décor photo">❯</button></div>
     <p id="decorPhotoCaption" class="hint">Venue styling example. Available décor and layouts may vary.</p>
-    <p class="hint">These are overall venue photos. We can add individual close-ups of linens, chair covers, aisle pillars, centrepieces and cocktail tables as they become available.</p>
+    <p class="hint">Photos show our actual décor. Aisle runner, floral columns and the backdrop can be viewed in the ceremony photo; individual setup and placement may vary.</p>
   </dialog>
 
   <script>
 
   // Venue photo examples are sourced from The Dream Room's existing public GoDaddy gallery.
-  const decorGalleryUrls = ["https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000013660.jpg/:/rs=w:1300,h:800","https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000013663.jpg/:/rs=w:1300,h:800","https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000034727.jpg/:/rs=w:1300,h:800","https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000037118.jpg/:/rs=w:1300,h:800","https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000015187.jpg/:/rs=w:1300,h:800"];
+  const decorItems = [
+    {label:'Aisle runner and ceremony styling',x:'0%',y:'0%'},
+    {label:'High-rise cocktail tables',x:'100%',y:'0%'},
+    {label:'Wedding centrepieces',x:'0%',y:'100%'},
+    {label:'Table linens and chair covers',x:'100%',y:'100%'}
+  ];
   const decorPhotoDialog = document.getElementById('decorPhotoDialog');
   const decorPhotoImage = document.getElementById('expandedDecorPhoto');
   const decorPhotoCaption = document.getElementById('decorPhotoCaption');
   let activeDecorPhotoIndex = 0;
   function showDecorPhoto(index) {
-    activeDecorPhotoIndex = (index + decorGalleryUrls.length) % decorGalleryUrls.length;
-    decorPhotoImage.src = decorGalleryUrls[activeDecorPhotoIndex];
-    decorPhotoImage.alt = 'The Dream Room venue gallery photo ' + (activeDecorPhotoIndex + 1) + ' of ' + decorGalleryUrls.length;
-    decorPhotoCaption.textContent = 'Venue photo ' + (activeDecorPhotoIndex + 1) + ' of ' + decorGalleryUrls.length + '. Layout and individual décor may vary.';
+    activeDecorPhotoIndex = (index + decorItems.length) % decorItems.length;
+    const photo = decorItems[activeDecorPhotoIndex];
+    decorPhotoImage.style.backgroundPosition = photo.x + ' ' + photo.y;
+    decorPhotoImage.setAttribute('aria-label', 'The Dream Room: '+photo.label);
+    decorPhotoCaption.textContent = photo.label + ' · Actual venue décor. Final event layouts may vary.';
     if (!decorPhotoDialog.open) decorPhotoDialog.showModal();
   }
   document.querySelectorAll('.decor-thumb').forEach(button => {
     button.addEventListener('click', () => showDecorPhoto(Number(button.dataset.photoIndex)));
   });
   document.querySelectorAll('[data-view-decor]').forEach(button => {
-    button.addEventListener('click', () => {
-      showDecorPhoto(Number(button.dataset.photoIndex || 0));
-      decorPhotoCaption.textContent = button.dataset.decorLabel + ': ' +
-        (button.dataset.decorLabel === 'Linens' || button.dataset.decorLabel === 'Chair covers'
-          ? 'detail from our venue. Tap the arrows for more venue photos.'
-          : 'general venue inspiration, not a close-up of this item. Tap the arrows for more photos.');
-    });
+    button.addEventListener('click', () => showDecorPhoto(Number(button.dataset.photoIndex)));
   });
   document.getElementById('closeDecorGallery').addEventListener('click', () => decorPhotoDialog.close());
   document.getElementById('prevDecorPhoto').addEventListener('click', () => showDecorPhoto(activeDecorPhotoIndex - 1));
