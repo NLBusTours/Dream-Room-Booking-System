@@ -44,17 +44,13 @@ Mobile-friendly customer-facing booking request page for The Dream Room, Paradis
 - Estimated totals include 15% HST, but are not binding quotes, paid reservations or guaranteed availability.
 - GoDaddy embed mode is `?embed=1`; update existing GoDaddy HTML section height to allow room for the quote calculator.
 
-## Venue décor photo previews
 
-- The wedding package selector includes a horizontally scrolling gallery of five photos already published on the business's own `dreamroomnl.ca` website. Tapping/clicking any photo opens an enlarged preview with next/previous/close controls.
-- The **Linens**, **Chair covers**, **Additional décor**, and **Cocktail tables** add-ons offer a **View photos** action that opens the same venue gallery without changing the selected add-ons or estimate.
-- Images are examples of the overall venue styling, **not verified item-specific product closeups**, and a disclaimer is displayed. For individual item selection galleries, obtain actual closeup photos for aisle carpet, aisle pillars, centrepieces, table linens, chair covers, champagne wall and high-rise cocktail tables and associate each with its matching item.
-- The existing GoDaddy embed code and `?embed=1` URL are unchanged.
-- The gallery images are served from the business's public GoDaddy image CDN; if the original website removes or changes those media URLs, the thumbnails will need updating.
+## Décor photography and mobile previews
 
-## Add-on photo preview styling
-
-- Each of the four image-enabled add-ons now has a small preview thumbnail instead of a text-only `View photos` link.
-- Desktop hover (fine pointer only) zooms the photo visually; tapping or clicking opens the full-screen venue gallery with keyboard-friendly native `<dialog>` controls. Mobile users can always tap the thumbnail; there is no reliance on hover.
-- Linens and chair covers use the confirmed 1000037118.jpg image already present on the Dream Room GoDaddy gallery, which visibly shows both. Additional décor and cocktail tables currently show *general venue inspiration*, not individually verified item close-ups. The wording explicitly distinguishes them.
-- The user has separately supplied aisle-runner and cocktail-table photos in chat. Those original image files have **not yet been uploaded to this public repository**. Replace general venue examples with individually hosted file URLs after obtaining stable public hosting or uploading the photographs to the repository.
+- Venue images were supplied directly by the business and published in `assets/real-dream-room-decor.webp` (a lightweight, four-photo composite).
+- The four labelled preview images are: aisle runner and ceremony décor; high-rise cocktail tables; wedding centrepieces; and table linens/chair covers.
+- The wedding section now has a labelled, swipeable four-image preview strip. Linen, chair-cover, extra décor and cocktail-table add-ons use their corresponding photo tile instead of unrelated GoDaddy gallery images.
+- Desktop users can hover for a magnified preview, while mobile users can tap to enlarge and navigate photographs in a dialog. The images show example setups, not guarantees of a specific layout.
+- The aisle runner image also shows ceremony décor. The centrepiece image includes an example floral backdrop. A standalone close-up of the champagne wall is still unavailable.
+- The composite is deliberately web-compressed for fast mobile loading. The original high-resolution photographs should be kept by the owner for future marketing and larger gallery use.
+- No image prices or new optional services were introduced. Wedding package inclusions and the estimate calculation are unchanged.
