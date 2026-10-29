@@ -73,10 +73,18 @@ def event_interval(event) -> tuple[datetime, datetime]:
     elif isinstance(start, date) and not isinstance(start, datetime):
         end = start + timedelta(days=1)
     else:
-        raise ValueError("Timed calendar event has no end time; refusing to assume it is free")
+        # Timed events with a missing end are still potentially bookings.
+        # Treat as zero-duration and conservatively block the entire day.
+        end = start
     start_local, end_local = to_local(start), to_local(end)
     if end_local <= start_local:
-        raise ValueError("Invalid calendar time range")
+        # BAND sometimes exports empty or reversed time ranges.
+        # Ignoring such an event would falsely label a booked date available.
+        # A zero-length event blocks its whole calendar day; a reversed event
+        # blocks that day and the next, conservatively covering overnight use.
+        day = datetime.combine(start_local.date(), time.min, tzinfo=ZONE)
+        days = 1 if end_local == start_local else 2
+        return day, datetime.combine(start_local.date() + timedelta(days=days), time.min, tzinfo=ZONE)
     return start_local, end_local
 
 
