@@ -4,7 +4,7 @@ Mobile-friendly customer-facing booking request page for The Dream Room, Paradis
 
 ## Features
 
-- Five pathways: private events, children's parties, weddings, workshops/public events, and Dream Host proposals.
+- Six pathways: private events, baby/bridal showers, children's parties, weddings, workshops/public events, and Dream Host proposals.
 - Captures contact details, optional alternate date, and total guest count (maximum 60).
 - For Sunday baby and bridal showers, offers a Sunday-only three-hour special at 10 AM–1 PM or 2 PM–5 PM. The special does not include evening hours or other days/event types. Other standard rentals may request flexible access hours.
 - For children's parties, offers 10 AM–12 PM, 11 AM–1 PM, or 2 PM–4 PM as fixed two-hour slots, with no custom time selection. The form does not offer 12–2.
@@ -22,7 +22,7 @@ Mobile-friendly customer-facing booking request page for The Dream Room, Paradis
 1. Review `index.html` and `thank-you.html` before publishing.
 2. Replace the same-named files in `NLBusTours/Dream-Room-Booking-System` on the `main` branch (or open a pull request for review).
 3. In GitHub Settings > Pages, verify it serves from `main` / root.
-4. Open `https://nlbustours.github.io/Dream-Room-Booking-System/` and test all five event types.
+4. Open `https://nlbustours.github.io/Dream-Room-Booking-System/` and test all six event types.
 5. Send a test submission and **confirm the request reaches the correct booking inbox**. The existing Web3Forms key has been retained but not independently verified by this deliverable.
 
 ## Notes
