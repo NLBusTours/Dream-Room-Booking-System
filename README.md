@@ -90,3 +90,12 @@ Mobile-friendly customer-facing booking request page for The Dream Room, Paradis
 - Next/previous controls cycle within these three ceremony photos; other décor categories stay independent.
 - The compressed, privacy-safe photo asset is `assets/ceremony-seating-styling.webp`. The three original high-resolution images remain with the owner, and final ceremony layouts may vary.
 - **Pricing unchanged:** ceremony styling shown is an example, not an automatic inclusion in the DIY hourly rental. Styled & Staffed package inclusions remain as described above.
+
+## Exact unavailable hours and daily switchover
+
+- Once a customer selects their date, a small availability summary appears **immediately below the date picker**, above the time-choice cards and flexible time fields.
+- It shows **exact occupied/held time intervals** from the anonymous BAND availability snapshot (time ranges only, no customer names or event details). An empty calendar is displayed as no recorded bookings, not a guarantee of availability.
+- **Every day from 1:00 to 2:00 PM is reserved for venue switchover and is never available for rental.** It appears separately from BAND bookings so it isn't misrepresented as a booked customer event.
+- The switchover rule is enforced for fixed-slot status, custom time availability, estimate calculations and submission validation. Invalid time windows over 16 hours are rejected as invalid rather than reported as a mere calendar conflict.
+- If the BAND snapshot is missing or older than 2 hours, the occupied-hour summary says it cannot verify the calendar; the 1–2 PM switchover remains blocked regardless.
+- Examples: a 12 PM–8 PM wedding is blocked for overlap with the switchover; a 2 PM–10 PM rental may be requested if no BAND conflict; 12 PM–11:55 AM is invalid for a rental.
