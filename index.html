@@ -71,6 +71,24 @@
     body.embed-view .mast, body.embed-view .aside, body.embed-view footer { display:none; }
     body.embed-view .wrap.main-grid { width:100%; max-width:920px; margin:0 auto; padding:0; display:block; }
     body.embed-view .form-panel { border:none; box-shadow:none; border-radius:0; background:transparent; padding:20px 12px; }
+    .decor-photos {margin-top:16px;padding-top:15px;border-top:1px solid #e8d6e0;}
+    .decor-photo-header strong {color:var(--rose-dark);font-size:.96rem;}
+    .decor-photo-header p {margin:4px 0 11px;}
+    .decor-photo-strip {display:flex;gap:10px;overflow-x:auto;padding:0 0 12px;scroll-snap-type:x mandatory;}
+    .decor-thumb {border:2px solid #e8cbd9;background:#faf0f6;border-radius:12px;overflow:hidden;padding:0;flex:0 0 120px;height:94px;scroll-snap-align:start;cursor:zoom-in;}
+    .decor-thumb:focus-visible,.decor-photo-button:focus-visible {outline:3px solid var(--rose-dark);outline-offset:2px;}
+    .decor-thumb img {display:block;width:100%;height:100%;object-fit:cover;}
+    .decor-addon-choice {display:flex;flex-direction:column;gap:4px;min-width:0;}
+    .decor-addon-choice .check {flex:1;}
+    .decor-photo-button {background:none;border:none;color:var(--rose-dark);font-size:.82rem;font-weight:650;text-align:left;text-decoration:underline;padding:3px 5px 8px;cursor:pointer;}
+    .decor-photo-dialog {width:min(94vw,780px);max-height:90vh;border:1px solid #e4c9d7;border-radius:16px;background:#fff9fc;color:var(--ink);padding:16px;}
+    .decor-photo-dialog::backdrop {background:rgba(35,17,29,.74);}
+    .decor-dialog-heading {display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px;color:var(--rose-dark);}
+    .decor-dialog-heading button {border:1px solid #ddc1cf;border-radius:9px;padding:8px;background:white;cursor:pointer;}
+    .decor-dialog-main {display:grid;grid-template-columns:40px minmax(0,1fr) 40px;gap:7px;align-items:center;}
+    .decor-dialog-main img {max-height:60vh;width:100%;object-fit:contain;border-radius:10px;}
+    .decor-dialog-main button {border:1px solid #e0d0d8;background:#fff;border-radius:9px;padding:9px 3px;cursor:pointer;}
+    .decor-photo-dialog .hint {text-align:center;}
     #weddingPackageBlock p { color:#685763; font-size:.9rem; }
     #weddingPackageBlock p strong { color:var(--rose-dark); }
     #weddingIncludedNotice { margin-top:10px; }
@@ -141,6 +159,18 @@
           <div id="weddingStyledDetails" hidden>
             <p><strong>Styled &amp; Staffed package.</strong> Includes venue use, on-site event staff, table and chair setup, teardown and cleanup, arranged rectangular tables and chairs, table linens, chair covers, aisle carpet, aisle pillars, centerpieces and other included wedding décor.</p>
             <p class="hint">Also includes the floral feature wall, champagne wall, backdrops, lounge furniture, Bluetooth speaker, photo lighting, kitchenette and free parking. High-rise cocktail tables, additional custom décor, catering, photography and entertainment may be requested separately.</p>
+          </div>
+          <div class="decor-photos" aria-label="Dream Room venue styling photo gallery">
+            <div class="decor-photo-header">
+              <div><strong>Take a look at our décor</strong><p class="hint">Real photos from our venue gallery. Tap a photo to enlarge. Specific décor combinations and availability may vary.</p></div>
+            </div>
+            <div class="decor-photo-strip">
+              <button class="decor-thumb" type="button" data-photo-index="0" aria-label="Enlarge Dream Room venue photo 1 of 5"><img loading="lazy" src="https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000013660.jpg/:/rs=w:1300,h:800" alt="The Dream Room venue décor photo 1" width="160" height="110"></button>
+              <button class="decor-thumb" type="button" data-photo-index="1" aria-label="Enlarge Dream Room venue photo 2 of 5"><img loading="lazy" src="https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000013663.jpg/:/rs=w:1300,h:800" alt="The Dream Room venue décor photo 2" width="160" height="110"></button>
+              <button class="decor-thumb" type="button" data-photo-index="2" aria-label="Enlarge Dream Room venue photo 3 of 5"><img loading="lazy" src="https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000034727.jpg/:/rs=w:1300,h:800" alt="The Dream Room venue décor photo 3" width="160" height="110"></button>
+              <button class="decor-thumb" type="button" data-photo-index="3" aria-label="Enlarge Dream Room venue photo 4 of 5"><img loading="lazy" src="https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000037118.jpg/:/rs=w:1300,h:800" alt="The Dream Room venue décor photo 4" width="160" height="110"></button>
+              <button class="decor-thumb" type="button" data-photo-index="4" aria-label="Enlarge Dream Room venue photo 5 of 5"><img loading="lazy" src="https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000015187.jpg/:/rs=w:1300,h:800" alt="The Dream Room venue décor photo 5" width="160" height="110"></button>
+            </div>
           </div>
         </div>
         <div class="form-step"><span class="number">2</span> Your contact information</div>
@@ -236,10 +266,22 @@
             <label class="check"><input type="checkbox" name="Add-ons" value="Table and chair setup/takedown" data-price="75" data-wedding-included="true"> Tables &amp; chairs setup/takedown · $75</label>
             <label class="check"><input type="checkbox" id="staffAddon" name="Add-ons" value="Event staffing" data-wedding-included="true"> Event staff · $25/hour</label>
             <label class="check"><input type="checkbox" id="cleanAddon" name="Add-ons" value="Post-event cleanup" data-wedding-included="true"> Cleanup · $50–$100</label>
-            <label class="check"><input type="checkbox" name="Add-ons" value="Linens" data-price="25" data-wedding-included="true"> Linens · $25</label>
-            <label class="check"><input type="checkbox" name="Add-ons" value="Chair covers" data-price="25" data-wedding-included="true"> Chair covers · $25</label>
-            <label class="check"><input type="checkbox" id="decorAddon" name="Add-ons" value="Additional decor"> Additional décor · from $25</label>
-            <label class="check"><input type="checkbox" id="cocktailAddon" name="Add-ons" value="Cocktail tables"> Cocktail tables · $20 each</label>
+            <div class="decor-addon-choice">
+              <label class="check"><input type="checkbox" name="Add-ons" value="Linens" data-price="25" data-wedding-included="true"> Linens · $25</label>
+              <button class="decor-photo-button" type="button" data-view-decor aria-label="View Dream Room décor gallery for Linens">📷 View photos</button>
+            </div>
+            <div class="decor-addon-choice">
+              <label class="check"><input type="checkbox" name="Add-ons" value="Chair covers" data-price="25" data-wedding-included="true"> Chair covers · $25</label>
+              <button class="decor-photo-button" type="button" data-view-decor aria-label="View Dream Room décor gallery for Chair covers">📷 View photos</button>
+            </div>
+            <div class="decor-addon-choice">
+              <label class="check"><input type="checkbox" id="decorAddon" name="Add-ons" value="Additional decor"> Additional décor · from $25</label>
+              <button class="decor-photo-button" type="button" data-view-decor aria-label="View Dream Room décor gallery for Additional décor">📷 View photos</button>
+            </div>
+            <div class="decor-addon-choice">
+              <label class="check"><input type="checkbox" id="cocktailAddon" name="Add-ons" value="Cocktail tables"> Cocktail tables · $20 each</label>
+              <button class="decor-photo-button" type="button" data-view-decor aria-label="View Dream Room décor gallery for Cocktail tables">📷 View photos</button>
+            </div>
             <label class="check"><input type="checkbox" id="entertainmentAddon" name="Add-ons" value="Photography / character entertainment"> Photography / character entertainment · custom quote</label>
             <label class="check"><input type="checkbox" id="cateringAddon" name="Add-ons" value="Catering inquiry"> Catering · custom quote</label>
           </div>
@@ -282,8 +324,37 @@
 
   <footer>© <span id="year">2026</span> The Dream Room · 69 Karwood Drive, Paradise, NL</footer>
 
+  <dialog id="decorPhotoDialog" class="decor-photo-dialog" aria-label="Dream Room décor photo preview">
+    <div class="decor-dialog-heading"><strong>Dream Room décor gallery</strong><button type="button" id="closeDecorGallery" aria-label="Close photo preview">✕ Close</button></div>
+    <div class="decor-dialog-main"><button id="prevDecorPhoto" type="button" aria-label="Previous décor photo">❮</button><img id="expandedDecorPhoto" alt="Large photograph of The Dream Room venue interior"><button id="nextDecorPhoto" type="button" aria-label="Next décor photo">❯</button></div>
+    <p id="decorPhotoCaption" class="hint">Venue styling example. Available décor and layouts may vary.</p>
+    <p class="hint">These are overall venue photos. We can add individual close-ups of linens, chair covers, aisle pillars, centrepieces and cocktail tables as they become available.</p>
+  </dialog>
+
   <script>
 
+  // Venue photo examples are sourced from The Dream Room's existing public GoDaddy gallery.
+  const decorGalleryUrls = ["https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000013660.jpg/:/rs=w:1300,h:800","https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000013663.jpg/:/rs=w:1300,h:800","https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000034727.jpg/:/rs=w:1300,h:800","https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000037118.jpg/:/rs=w:1300,h:800","https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000015187.jpg/:/rs=w:1300,h:800"];
+  const decorPhotoDialog = document.getElementById('decorPhotoDialog');
+  const decorPhotoImage = document.getElementById('expandedDecorPhoto');
+  const decorPhotoCaption = document.getElementById('decorPhotoCaption');
+  let activeDecorPhotoIndex = 0;
+  function showDecorPhoto(index) {
+    activeDecorPhotoIndex = (index + decorGalleryUrls.length) % decorGalleryUrls.length;
+    decorPhotoImage.src = decorGalleryUrls[activeDecorPhotoIndex];
+    decorPhotoImage.alt = 'The Dream Room venue gallery photo ' + (activeDecorPhotoIndex + 1) + ' of ' + decorGalleryUrls.length;
+    decorPhotoCaption.textContent = 'Venue photo ' + (activeDecorPhotoIndex + 1) + ' of ' + decorGalleryUrls.length + '. Layout and individual décor may vary.';
+    if (!decorPhotoDialog.open) decorPhotoDialog.showModal();
+  }
+  document.querySelectorAll('.decor-thumb').forEach(button => {
+    button.addEventListener('click', () => showDecorPhoto(Number(button.dataset.photoIndex)));
+  });
+  document.querySelectorAll('[data-view-decor]').forEach(button => {
+    button.addEventListener('click', () => showDecorPhoto(0));
+  });
+  document.getElementById('closeDecorGallery').addEventListener('click', () => decorPhotoDialog.close());
+  document.getElementById('prevDecorPhoto').addEventListener('click', () => showDecorPhoto(activeDecorPhotoIndex - 1));
+  document.getElementById('nextDecorPhoto').addEventListener('click', () => showDecorPhoto(activeDecorPhotoIndex + 1));
   // GoDaddy embed mode removes duplicate page branding.
   if (new URLSearchParams(window.location.search).get('embed') === '1') {
     document.body.classList.add('embed-view');
