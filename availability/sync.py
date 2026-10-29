@@ -1,0 +1,153 @@
+"""Create a sanitized, read-only busy-time snapshot from the private BAND iCal feed.
+
+Only a GitHub repository secret holds the calendar subscription URL. Never print it,
+commit it, embed it in HTML, or publish any VEVENT metadata such as descriptions,
+UIDs, titles, locations, or attendee names.
+"""
+from __future__ import annotations
+
+import json
+import os
+from collections import defaultdict
+from datetime import date, datetime, time, timedelta, timezone
+from pathlib import Path
+from urllib.parse import urlsplit, urlunsplit
+from urllib.request import Request, build_opener, HTTPRedirectHandler
+from zoneinfo import ZoneInfo
+
+from icalendar import Calendar
+import recurring_ical_events
+
+ZONE = ZoneInfo("America/St_Johns")
+HORIZON_DAYS = 400
+MAX_FEED_BYTES = 5_000_000
+MAX_OCCURRENCES = 10_000
+
+
+class RejectRedirects(HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise RuntimeError("Calendar endpoint redirected unexpectedly; no availability published")
+
+
+def normalize_private_url(raw: str) -> str:
+    raw = raw.strip()
+    if raw.lower().startswith("webcal://"):
+        raw = "https://" + raw[len("webcal://"):]
+    parsed = urlsplit(raw)
+    # Restrict where the repository's private subscription token may be sent.
+    if parsed.scheme != "https" or parsed.hostname != "api.band.us":
+        raise ValueError("Calendar URL must use the official api.band.us HTTPS endpoint")
+    if not parsed.path.startswith("/ical"):
+        raise ValueError("Unexpected calendar subscription path")
+    if not parsed.query:
+        raise ValueError("Calendar feed has no access token")
+    return urlunsplit(parsed)
+
+
+def download_ics(private_url: str) -> bytes:
+    request = Request(private_url, headers={"Accept": "text/calendar", "User-Agent": "DreamRoomAvailability/1.0"})
+    # Reject 301/302: never pass a private token to another host.
+    with build_opener(RejectRedirects()).open(request, timeout=20) as response:
+        content = response.read(MAX_FEED_BYTES + 1)
+    if len(content) > MAX_FEED_BYTES:
+        raise ValueError("Calendar feed exceeds safe size")
+    if b"BEGIN:VCALENDAR" not in content or b"BEGIN:VEVENT" not in content:
+        raise ValueError("Invalid or empty BAND calendar: refusing to publish an empty schedule")
+    return content
+
+
+def to_local(value: date | datetime) -> datetime:
+    if isinstance(value, datetime):
+        return value.replace(tzinfo=ZONE) if value.tzinfo is None else value.astimezone(ZONE)
+    return datetime.combine(value, time.min, tzinfo=ZONE)
+
+
+def event_interval(event) -> tuple[datetime, datetime]:
+    if "DTSTART" not in event:
+        raise ValueError("Calendar event missing start time")
+    start = event.decoded("DTSTART")
+    if "DTEND" in event:
+        end = event.decoded("DTEND")
+    elif "DURATION" in event:
+        end = start + event.decoded("DURATION")
+    elif isinstance(start, date) and not isinstance(start, datetime):
+        end = start + timedelta(days=1)
+    else:
+        raise ValueError("Timed calendar event has no end time; refusing to assume it is free")
+    start_local, end_local = to_local(start), to_local(end)
+    if end_local <= start_local:
+        raise ValueError("Invalid calendar time range")
+    return start_local, end_local
+
+
+def make_snapshot(ics_bytes: bytes, now_utc: datetime) -> dict:
+    now_local = now_utc.astimezone(ZONE)
+    first_date = now_local.date()
+    last_date = first_date + timedelta(days=HORIZON_DAYS)
+    window_start = datetime.combine(first_date, time.min, tzinfo=ZONE)
+    window_end = datetime.combine(last_date + timedelta(days=1), time.min, tzinfo=ZONE)
+
+    cal = Calendar.from_ical(ics_bytes)
+    if str(cal.get("VERSION", "")) != "2.0" or not cal.walk("VEVENT"):
+        raise ValueError("Invalid or empty iCalendar; refusing to publish empty availability")
+
+    occurrences = recurring_ical_events.of(cal).between(window_start, window_end)
+    if len(occurrences) > MAX_OCCURRENCES:
+        raise ValueError("Calendar contains too many occurrences")
+
+    daily: dict[str, list[list[int]]] = defaultdict(list)
+    for event in occurrences:
+        if str(event.get("STATUS", "")).upper() == "CANCELLED":
+            continue
+        if str(event.get("TRANSP", "")).upper() == "TRANSPARENT":
+            continue
+        start, end = event_interval(event)
+        day = max(first_date, start.date())
+        through = min(last_date, end.date())
+        while day <= through:
+            midnight = datetime.combine(day, time.min, tzinfo=ZONE)
+            next_midnight = datetime.combine(day + timedelta(days=1), time.min, tzinfo=ZONE)
+            if start < next_midnight and end > midnight:
+                a = max(start, midnight)
+                b = min(end, next_midnight)
+                start_min = a.hour * 60 + a.minute
+                end_min = 1440 if b >= next_midnight else b.hour * 60 + b.minute
+                if start_min < end_min:
+                    daily[day.isoformat()].append([start_min, end_min])
+            day += timedelta(days=1)
+
+    # Merge intervals: do not expose names, IDs, event counts or overlapping records.
+    merged: dict[str, list[list[int]]] = {}
+    for day, intervals in sorted(daily.items()):
+        combined: list[list[int]] = []
+        for start, end in sorted(intervals):
+            if combined and start <= combined[-1][1]:
+                combined[-1][1] = max(combined[-1][1], end)
+            else:
+                combined.append([start, end])
+        merged[day] = combined
+
+    return {
+        "version": 1,
+        "timezone": "America/St_Johns",
+        "generated_at": now_utc.astimezone(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
+        "from_date": first_date.isoformat(),
+        "through_date": last_date.isoformat(),
+        "busy": merged,
+    }
+
+
+def main() -> None:
+    secret = os.getenv("DREAM_ROOM_BAND_ICAL_URL")
+    if not secret:
+        raise RuntimeError("DREAM_ROOM_BAND_ICAL_URL is not configured")
+    content = download_ics(normalize_private_url(secret))
+    snapshot = make_snapshot(content, datetime.now(timezone.utc))
+    # Write only after a complete successful parse. Never publish a partial/free snapshot.
+    destination = Path("availability.json")
+    destination.write_text(json.dumps(snapshot, separators=(",", ":"), sort_keys=True) + "\n", encoding="utf-8")
+    print("Availability snapshot generated (private event details omitted)")
+
+
+if __name__ == "__main__":
+    main()

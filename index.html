@@ -108,6 +108,19 @@
     .decor-single-large[hidden] {display:none !important;}
     .decor-dialog-main button {border:1px solid #e0d0d8;background:#fff;border-radius:9px;padding:9px 3px;cursor:pointer;}
     .decor-photo-dialog .hint {text-align:center;}
+    .availability-checker {margin:16px 0 18px;padding:17px;background:#fffafd;border:1px solid #e7d3df;border-radius:14px;}
+    .availability-head {display:flex;align-items:center;justify-content:space-between;gap:12px;}
+    .availability-head h3 {margin:4px 0 6px;color:var(--rose-dark);font-size:1.3rem;}
+    .availability-refresh {border:1px solid #ddc9d3;background:white;border-radius:9px;color:var(--rose-dark);padding:7px 10px;font-size:.8rem;cursor:pointer;}
+    .availability-refresh:disabled {opacity:.55;cursor:wait;}
+    .availability-message {margin:7px 0 10px;color:#645560;font-size:.9rem;}
+    .availability-slots {display:grid;gap:6px;margin:11px 0;}
+    .availability-slot {display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid #efe1e9;border-radius:9px;padding:8px 10px;background:white;font-size:.85rem;}
+    .availability-slot span:first-child {font-weight:600;}
+    .availability-tag {display:inline-flex;align-items:center;white-space:nowrap;border-radius:7px;padding:3px 7px;background:#f2eef1;color:#6c5b68;font-size:.73rem;font-weight:700;}
+    .availability-tag.available {color:#26704c;background:#eaf4ed;}
+    .availability-tag.booked {color:#8f3451;background:#f9e7ec;}
+    .availability-tag.unknown {color:#685d63;background:#f2edf0;}
     #weddingPackageBlock p { color:#685763; font-size:.9rem; }
     #weddingPackageBlock p strong { color:var(--rose-dark); }
     #weddingIncludedNotice { margin-top:10px; }
@@ -239,6 +252,16 @@
             <div class="field"><label for="endTime">Access end time <span class="req">*</span></label><input id="endTime" name="End time" type="time" step="900" required></div>
           </div>
           <p class="hint" id="durationHint" aria-live="polite">Please include any setup, decorating, cleanup and takedown time in your requested hours.</p>
+          <section class="availability-checker" id="availabilityPanel" hidden aria-label="Dream Room booking availability">
+            <div class="availability-head">
+              <div><div class="eyebrow">Check your date</div><h3>Calendar availability</h3></div>
+              <button class="availability-refresh" id="availabilityRefresh" type="button" aria-label="Refresh availability"><span aria-hidden="true">↻</span> Refresh</button>
+            </div>
+            <p class="availability-message" id="availabilityMessage" role="status" aria-live="polite">Choose your date and time to see availability.</p>
+            <div class="availability-slots" id="availabilitySlots" hidden></div>
+            <p id="availabilityAsOf" class="hint"></p>
+            <p class="hint">Times marked open are <strong>available to request</strong>, not confirmed reservations. Our team must approve all bookings.</p>
+          </section>
           <div class="field" style="margin-top:15px"><label for="guestCount">Total guest count, including children <span class="req">*</span></label><input id="guestCount" name="Total guests" type="number" min="1" max="60" step="1" placeholder="Maximum 60" required><p class="hint">Venue capacity is 60 people total. Seated setups depend on the room layout.</p></div>
         </div>
 
@@ -807,5 +830,6 @@
   });
 
   </script>
+  <script src="availability/checker.js"></script>
 </body>
 </html>

@@ -1,0 +1,57 @@
+name: Dream Room availability sync
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "availability/**"
+      - ".github/workflows/sync-availability.yml"
+  schedule:
+    - cron: "7,37 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dream-room-availability-sync
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install calendar parsers
+        run: python -m pip install -r availability/requirements.txt
+      - name: Run calendar parser tests
+        run: python -m unittest discover -s availability -p 'test_*.py' -v
+      - name: Fetch and sanitize BAND calendar
+        env:
+          DREAM_ROOM_BAND_ICAL_URL: ${{ secrets.DREAM_ROOM_BAND_ICAL_URL }}
+        run: |
+          if [ -z "$DREAM_ROOM_BAND_ICAL_URL" ]; then
+            echo "::notice title=Availability not configured::Add the DREAM_ROOM_BAND_ICAL_URL repository secret to activate the checker."
+            exit 0
+          fi
+          python availability/sync.py
+      - name: Publish sanitized availability snapshot
+        run: |
+          if [ ! -f availability.json ]; then
+            echo "No verified availability snapshot generated."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add availability.json
+          if git diff --cached --quiet; then
+            echo "No change."
+            exit 0
+          fi
+          git commit -m "chore: refresh sanitized Dream Room busy times [skip ci]"
+          git pull --rebase origin main
+          git push origin HEAD:main
