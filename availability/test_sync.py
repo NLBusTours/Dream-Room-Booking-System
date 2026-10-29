@@ -4,6 +4,7 @@ import unittest
 from datetime import datetime, timezone
 
 from sync import make_snapshot, normalize_private_url
+from publish_issue import make_body
 
 NOW = datetime(2026, 11, 1, 12, 0, tzinfo=timezone.utc)
 HEAD = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//DreamRoom Tests//EN\r\n"
@@ -72,6 +73,15 @@ class AvailabilityTests(unittest.TestCase):
         result = make_snapshot(calendar(event("late", "20261107T230000", "20261108T010000")), NOW)
         self.assertEqual(result["busy"]["2026-11-07"], [[1380, 1440]])
         self.assertEqual(result["busy"]["2026-11-08"], [[0, 60]])
+
+    def test_anonymous_issue_body(self):
+        sample = calendar(event("private-booking", "20261107T100000", "20261107T130000"))
+        snapshot = make_snapshot(sample, NOW)
+        body = make_body(snapshot)
+        self.assertIn("DREAM_ROOM_AVAILABILITY_JSON_START", body)
+        self.assertNotIn("private@example.com", body)
+        self.assertNotIn("Customer Name", body)
+        self.assertNotIn("private-booking", body)
 
     def test_empty_calendar_fails_closed(self):
         with self.assertRaises(ValueError):
