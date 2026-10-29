@@ -75,3 +75,10 @@ Mobile-friendly customer-facing booking request page for The Dream Room, Paradis
 - When the calendar is loading, fixed slots remain unselectable until availability can be checked. If the feed cannot be verified, the cards allow requests with a clear warning and team approval requirement.
 - The old duplicate availability section no longer appears below those predefined time slots. **Custom times**, weddings, and other flexible-hour rentals retain the separate exact-hours availability check.
 - Native select fields remain in the DOM to preserve calculation, email submission and no-JavaScript fallback.
+
+## Chair covers photo update
+
+- Chair-cover add-on now uses a dedicated real photo (`assets/chair-covers.webp`) showing white fitted chair covers around a long event table, supplied by the owner.
+- The wedding décor gallery has separate **Table linens** and **Chair covers** photo tiles.
+- Clicking/tapping the chair-cover thumbnail opens the matching actual photo, not the old shared linen preview. Desktop hover zoom remains enabled.
+- The lightweight WebP preview is optimized for mobile and originally supplied as a larger JPEG; retain the original for professional marketing.
