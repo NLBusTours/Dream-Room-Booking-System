@@ -306,6 +306,11 @@
   const weekdayShowerHint = get('weekdayShowerHint');
   const childSlotsBlock = get('childSlotsBlock');
   const childSlot = get('childTimeSlot');
+  const weddingBlock = get('weddingPackageBlock');
+  const weddingPackage = get('weddingPackage');
+  const weddingDIYDetails = get('weddingDIYDetails');
+  const weddingStyledDetails = get('weddingStyledDetails');
+  const weddingIncludedNotice = get('weddingIncludedNotice');
   const customTimesBlock = get('customTimesBlock');
   const durationHint = get('durationHint');
   const feedback = get('feedback');
@@ -318,6 +323,7 @@
   const cleanCheck = get('cleanAddon');
   const decorCheck = get('decorAddon');
   const entertainmentCheck = get('entertainmentAddon');
+  const cateringCheck = get('cateringAddon');
   const HST_RATE = 0.15;
   const money = amount => Number(amount).toLocaleString('en-CA', {style:'currency', currency:'CAD'});
   let estimatedAmounts = null;
@@ -344,6 +350,33 @@
     return typeInput.value === 'shower' && isWeekend(rawDate.value) &&
       (showerChoice.value === '10:00|13:00' || showerChoice.value === '14:00|17:00');
   }
+  function isStyledWedding() {
+    return typeInput.value === 'wedding' &&
+      (weddingPackage.value === 'styled4' || weddingPackage.value === 'styled8');
+  }
+  function selectedWeddingHours() {
+    if (weddingPackage.value === 'styled4') return 4;
+    if (weddingPackage.value === 'styled8') return 8;
+    return null;
+  }
+  function updateWeddingOptions() {
+    const wedding = typeInput.value === 'wedding';
+    weddingBlock.hidden = !wedding;
+    weddingPackage.disabled = !wedding;
+    weddingPackage.required = wedding;
+    if (!wedding) weddingPackage.value = '';
+    weddingDIYDetails.hidden = !wedding || weddingPackage.value !== 'hourly';
+    weddingStyledDetails.hidden = !isStyledWedding();
+
+    const included = isStyledWedding();
+    weddingIncludedNotice.hidden = !included;
+    document.querySelectorAll('#addOnChoices input[data-wedding-included="true"]').forEach(input => {
+      if (included) input.checked = false;
+      input.disabled = included;
+      input.closest('label').classList.toggle('wedding-included', included);
+    });
+    updateAddOnFields();
+  }
   function durationMinutes() {
     if (!start.value || !end.value) return null;
     const [sh,sm] = start.value.split(':').map(Number);
@@ -354,7 +387,12 @@
   }
   function updateDuration() {
     const mins = durationMinutes();
-    if (typeInput.value === 'children' && childSlot.value === 'other') {
+    if (isStyledWedding()) {
+      const hours = selectedWeddingHours();
+      durationHint.textContent = 'This package includes ' + hours +
+        ' hours of venue access. Please select start and end times totalling exactly ' + hours +
+        ' hours. Our team will confirm the setup, staffing and cleanup timeline.';
+    } else if (typeInput.value === 'children' && childSlot.value === 'other') {
       durationHint.textContent = 'Please request a two-hour party window. Other hours require staff approval.';
     } else if (typeInput.value === 'children') {
       durationHint.textContent = 'Two-hour party slots are requests and subject to approval.';
@@ -434,6 +472,7 @@
     [rawDate, backupDate, start, end, count].forEach(input => { input.disabled = !booking; });
     rawDate.required = booking;
     count.required = booking;
+    updateWeddingOptions();
     refreshBookingTimes();
     feedback.hidden = true;
     updateEstimate();
@@ -454,14 +493,27 @@
     if (mins === null || mins > 960 || (type === 'children' && mins !== 120)) return null;
     if (type === 'children' && !childSlot.value) return null;
     if (type === 'shower' && isWeekend(rawDate.value) && !showerChoice.value) return null;
+    if (type === 'wedding') {
+      if (!weddingPackage.value) return null;
+      const requiredHours = selectedWeddingHours();
+      if (requiredHours !== null && mins !== requiredHours * 60) return null;
+    }
     const lines = [];
     const add = (label,min,max=min) => lines.push({label,min,max});
-    const base = weekendSpecialChosen() ? 350 : mins / 60 * 150;
-    add(weekendSpecialChosen() ? 'Weekend shower special (3 hours)' : 'Venue rental (' + (mins/60).toLocaleString('en-CA',{maximumFractionDigits:2}) + ' hours × $150)', base);
+    const base = type === 'wedding' && weddingPackage.value === 'styled4' ? 800 :
+      type === 'wedding' && weddingPackage.value === 'styled8' ? 1400 :
+      weekendSpecialChosen() ? 350 : mins / 60 * 150;
+    const baseLabel = type === 'wedding' && weddingPackage.value === 'styled4' ?
+      'Styled & Staffed Wedding (4 hours, included services)' :
+      type === 'wedding' && weddingPackage.value === 'styled8' ?
+      'Styled & Staffed Wedding (8 hours, included services)' :
+      weekendSpecialChosen() ? 'Weekend shower special (3 hours)' :
+      'Venue rental (' + (mins/60).toLocaleString('en-CA',{maximumFractionDigits:2}) + ' hours × $150)';
+    add(baseLabel, base);
     document.querySelectorAll('#addOnChoices input[data-price]:checked').forEach(el => {
-      add(el.value, Number(el.dataset.price));
+      if (!el.disabled) add(el.value, Number(el.dataset.price));
     });
-    if (staffCheck.checked) {
+    if (staffCheck.checked && !staffCheck.disabled) {
       const hrs = Number(staffHours.value);
       if (!Number.isFinite(hrs) || hrs < 1 || hrs > 16 || (hrs*2)%1 !== 0) return null;
       add('Event staff (' + hrs + ' hours × $25)', hrs*25);
@@ -471,7 +523,7 @@
       if (!Number.isInteger(qty) || qty < 1 || qty > 10) return null;
       add('Cocktail tables (' + qty + ' × $20)',qty*20);
     }
-    if (cleanCheck.checked) add('Post-event cleanup',50,100);
+    if (cleanCheck.checked && !cleanCheck.disabled) add('Post-event cleanup',50,100);
     if (decorCheck.checked) add('Additional décor (starting amount)',25);
     const subtotalMin = lines.reduce((sum,l)=>sum+l.min,0);
     const subtotalMax = lines.reduce((sum,l)=>sum+l.max,0);
@@ -479,8 +531,9 @@
     const taxMax = Math.round(subtotalMax * HST_RATE * 100)/100;
     return {lines,subtotalMin,subtotalMax,taxMin,taxMax,
       totalMin:subtotalMin+taxMin,totalMax:subtotalMax+taxMax,
-      customQuote:entertainmentCheck.checked,decorVariable:decorCheck.checked,
-      wedding: type === 'wedding'};
+      customQuote:entertainmentCheck.checked || cateringCheck.checked,
+      decorVariable:decorCheck.checked,
+      wedding: type === 'wedding', styledWedding:isStyledWedding()};
   }
   function updateEstimate() {
     const type = typeInput.value;
@@ -493,7 +546,12 @@
       get('estimateSubtotal').textContent = '—';
       get('estimateTax').textContent = '—';
       get('estimateTotal').textContent = '—';
-      get('estimateNotes').textContent = 'Choose a date, time slot and any add-on quantities to view your estimate.';
+      const requiredHours = selectedWeddingHours();
+      get('estimateNotes').textContent = type === 'wedding' && !weddingPackage.value
+        ? 'Choose a wedding rental package and your preferred access times to see your estimate.'
+        : type === 'wedding' && requiredHours !== null && durationMinutes() !== requiredHours*60
+        ? 'Your selected wedding package includes exactly ' + requiredHours + ' hours. Adjust the start and end times to match.'
+        : 'Choose a date, time slot and any add-on quantities to view your estimate.';
       return;
     }
     const e = estimatedAmounts;
@@ -515,7 +573,9 @@
     if (e.subtotalMin!==e.subtotalMax) notes.push('Cleanup is quoted between $50 and $100.');
     if (e.decorVariable) notes.push('Décor estimate includes a $25 starting allowance; custom décor may cost more.');
     if (e.customQuote) notes.push('Photography and character entertainment are not included until separately quoted.');
-    if (e.wedding) notes.push('Styled and staffed wedding packages require a separate quote.');
+    if (e.styledWedding) notes.push('Staff, setup/takedown, cleanup, table linens, chair covers and standard wedding décor are included.');
+    else if (e.wedding) notes.push('Base wedding rental is DIY. Staff, setup and cleanup are optional extras.');
+    if (cateringCheck.checked) notes.push('Catering is not included in this estimate and requires a separate quote.');
     get('estimateNotes').textContent=notes.join(' ');
   }
   function showFeedback(message) {
@@ -529,6 +589,10 @@
   rawDate.addEventListener('change',refreshBookingTimes);
   showerChoice.addEventListener('change',refreshBookingTimes);
   childSlot.addEventListener('change',refreshBookingTimes);
+  weddingPackage.addEventListener('change', () => {
+    updateWeddingOptions();
+    updateDuration();
+  });
   start.addEventListener('change',updateDuration);
   end.addEventListener('change',updateDuration);
   form.addEventListener('change',event => {
@@ -570,6 +634,10 @@
       if (type==='children' && get('childNumber').value && Number(get('childNumber').value)>Number(count.value)) {
         showFeedback('The number of children cannot exceed the total guest count.');count.focus();return;
       }
+      if (type==='wedding' && selectedWeddingHours() !== null && mins !== selectedWeddingHours()*60) {
+        showFeedback('Please choose a ' + selectedWeddingHours() +
+          '-hour access window for your selected wedding package.');start.focus();return;
+      }
       if (type==='wedding' && get('weddingType').value.includes('Ceremony') && Number(get('ceremonyCount').value)>32) {
         showFeedback('Standard ceremony seating accommodates 32. Please describe alternative seating needs in notes.');return;
       }
@@ -581,6 +649,12 @@
     submitBtn.disabled=true;
     submitBtn.textContent='Sending your request…';
     const data=new FormData(form);
+    if (type === 'wedding') {
+      data.set('Wedding package', weddingPackage.options[weddingPackage.selectedIndex].textContent.trim());
+      data.set('Included wedding package services', isStyledWedding()
+        ? 'Event staff, table/chair setup and takedown, cleanup, table linens, chair covers, aisle carpet, aisle pillars, centrepieces and standard wedding decor'
+        : 'DIY base venue rental; optional services are quoted separately');
+    }
     if (type==='children' && childSlot.value) {
       data.set('Children\'s party time slot',childSlot.value==='other'?'Other time requested (staff approval required)':childSlot.options[childSlot.selectedIndex].textContent.trim());
     }
