@@ -257,6 +257,16 @@
     const start = document.getElementById('startTime');
     const end = document.getElementById('endTime');
     const count = document.getElementById('guestCount');
+    const privateOccasionBlock = document.getElementById('privateOccasionBlock');
+    const privateOccasion = document.getElementById('privateType');
+    const sundayShowerBlock = document.getElementById('sundayShowerBlock');
+    const showerOption = document.getElementById('showerBookingOption');
+    const showerSlotBlock = document.getElementById('sundayShowerSlotsBlock');
+    const showerSlot = document.getElementById('sundayShowerSlot');
+    const childSlotsBlock = document.getElementById('childSlotsBlock');
+    const childSlot = document.getElementById('childTimeSlot');
+    const customTimesBlock = document.getElementById('customTimesBlock');
+    const durationHint = document.getElementById('durationHint');
     const feedback = document.getElementById('feedback');
     const submitBtn = document.getElementById('submitBtn');
     document.getElementById('year').textContent = new Date().getFullYear();
@@ -273,9 +283,67 @@
       return new Date(y, m-1, day).toLocaleDateString('en-CA', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
     }
 
+    function isSundayDate(iso) {
+      if (!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(iso)) return false;
+      const [year, month, day] = iso.split('-').map(Number);
+      return new Date(Date.UTC(year, month - 1, day)).getUTCDay() === 0;
+    }
+    function sundaySpecialEligible() {
+      return typeInput.value === 'private' &&
+        (privateOccasion.value === 'Baby shower' || privateOccasion.value === 'Bridal shower') &&
+        isSundayDate(rawDate.value);
+    }
+    function refreshBookingTimes() {
+      const isHost = typeInput.value === 'host';
+      const isChild = typeInput.value === 'children';
+      const eligible = sundaySpecialEligible();
+      const wasFixed = start.readOnly;
+      sundayShowerBlock.hidden = !eligible;
+      showerOption.disabled = !eligible;
+      showerOption.required = eligible;
+      if (!eligible) { showerOption.value = ''; showerSlot.value = ''; }
+      const isSpecial = eligible && showerOption.value === 'special';
+      showerSlotBlock.hidden = !isSpecial;
+      showerSlot.disabled = !isSpecial;
+      showerSlot.required = isSpecial;
+      if (!isSpecial) showerSlot.value = '';
+      childSlotsBlock.hidden = !isChild;
+      childSlot.disabled = !isChild;
+      childSlot.required = isChild;
+      if (!isChild) childSlot.value = '';
+      const fixed = isChild || isSpecial;
+      const waitingForOption = eligible && !showerOption.value;
+      customTimesBlock.hidden = isHost || fixed || waitingForOption;
+      start.required = !isHost && !fixed && !waitingForOption;
+      end.required = !isHost && !fixed && !waitingForOption;
+      if (fixed) {
+        const selected = isChild ? childSlot.value : showerSlot.value;
+        const parts = selected ? selected.split('|') : ['', ''];
+        start.value = parts[0];
+        end.value = parts[1];
+        start.readOnly = true;
+        end.readOnly = true;
+      } else {
+        start.readOnly = false;
+        end.readOnly = false;
+        if (wasFixed) { start.value = ''; end.value = ''; }
+      }
+      if (isChild) {
+        durationHint.textContent = 'Choose one of our two-hour party slots. Booking times are subject to confirmation.';
+      } else if (isSpecial) {
+        durationHint.textContent = 'The Sunday special is a three-hour rental, including setup, decorating, cleanup and takedown.';
+      } else {
+        updateDuration();
+      }
+      durationHint.hidden = isHost || waitingForOption;
+    }
     function changeType() {
       const t = typeInput.value;
       const isHost = t === 'host';
+      const isPrivate = t === 'private';
+      privateOccasionBlock.hidden = !isPrivate;
+      privateOccasion.disabled = !isPrivate;
+      privateOccasion.required = isPrivate;
       sections.forEach(section => {
         const active = section.dataset.section === t;
         section.hidden = !active;
@@ -288,10 +356,16 @@
       extras.hidden = isHost;
       schedule.querySelectorAll('input').forEach(input => { input.disabled = isHost; });
       extras.querySelectorAll('input, textarea').forEach(input => { input.disabled = isHost; });
-      [rawDate,start,end,count].forEach(input => { input.required = !isHost; });
+      [rawDate,count].forEach(input => { input.required = !isHost; });
+      refreshBookingTimes();
       feedback.hidden = true;
     }
     typeInput.addEventListener('change', changeType);
+    privateOccasion.addEventListener('change', refreshBookingTimes);
+    rawDate.addEventListener('change', refreshBookingTimes);
+    showerOption.addEventListener('change', refreshBookingTimes);
+    showerSlot.addEventListener('change', refreshBookingTimes);
+    childSlot.addEventListener('change', refreshBookingTimes);
     changeType();
 
     function durationMinutes() {
@@ -324,6 +398,9 @@
       const isHost = typeInput.value === 'host';
       if (!isHost) {
         if (rawDate.value < today || (backupDate.value && backupDate.value < today)) { showFeedback('Please select a future date.'); rawDate.focus(); return; }
+        if (sundaySpecialEligible() && showerOption.value === 'special' && backupDate.value && !isSundayDate(backupDate.value)) {
+          showFeedback('Please choose a Sunday for your alternate date or leave it blank for the Sunday special.'); backupDate.focus(); return;
+        }
         const mins = durationMinutes();
         if (mins === null || mins > 16*60) { showFeedback('Please double-check your start and end times. For rentals longer than 16 hours, contact our team directly.'); start.focus(); return; }
         if (typeInput.value === 'children' && document.getElementById('childNumber').value && Number(document.getElementById('childNumber').value) > Number(count.value)) {
