@@ -51,6 +51,11 @@ Mobile-friendly customer-facing booking request page for The Dream Room, Paradis
 - The four labelled preview images are: aisle runner and ceremony décor; high-rise cocktail tables; wedding centrepieces; and table linens/chair covers.
 - The wedding section now has a labelled, swipeable four-image preview strip. Linen, chair-cover, extra décor and cocktail-table add-ons use their corresponding photo tile instead of unrelated GoDaddy gallery images.
 - Desktop users can hover for a magnified preview, while mobile users can tap to enlarge and navigate photographs in a dialog. The images show example setups, not guarantees of a specific layout.
-- The aisle runner image also shows ceremony décor. The centrepiece image includes an example floral backdrop. A standalone close-up of the champagne wall is still unavailable.
+- The aisle runner image also shows ceremony décor. The centrepiece image includes an example floral backdrop. Champagne and floral feature wall preview is now included, using the photo already present in the business's GoDaddy-hosted venue gallery (`1000034727.jpg`). The gallery has five photos; the champagne/floral wall image is explicitly labelled as included with the rental.
 - The composite is deliberately web-compressed for fast mobile loading. The original high-resolution photographs should be kept by the owner for future marketing and larger gallery use.
 - No image prices or new optional services were introduced. Wedding package inclusions and the estimate calculation are unchanged.
+
+### Champagne wall & floral feature wall
+- The wedding gallery includes a dedicated photo of both the pink floral wall and the adjacent champagne display.
+- These are included venue features, **not separately priced add-ons**.
+- This fifth gallery photo is sourced from the venue's existing GoDaddy media CDN. The existing four-photo composite is unchanged. On mobile, tapping the fifth photo opens the complete portrait image rather than a cropped thumbnail.
