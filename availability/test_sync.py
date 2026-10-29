@@ -83,6 +83,25 @@ class AvailabilityTests(unittest.TestCase):
         self.assertNotIn("Customer Name", body)
         self.assertNotIn("private-booking", body)
 
+    def test_zero_duration_blocks_full_day(self):
+        sample = calendar(event("instant", "20261109T120000", "20261109T120000"))
+        result = make_snapshot(sample, NOW)
+        self.assertEqual(result["busy"]["2026-11-09"], [[0, 1440]])
+
+    def test_reversed_time_blocks_two_days(self):
+        sample = calendar(event("reversed", "20261110T230000", "20261110T010000"))
+        result = make_snapshot(sample, NOW)
+        self.assertEqual(result["busy"]["2026-11-10"], [[0, 1440]])
+        self.assertEqual(result["busy"]["2026-11-11"], [[0, 1440]])
+
+    def test_no_end_blocks_full_day(self):
+        sample = calendar(
+            "BEGIN:VEVENT\r\nUID:no-end\r\nDTSTART;TZID=America/St_Johns:20261112T100000\r\n"
+            "SUMMARY:Private booking\r\nEND:VEVENT\r\n"
+        )
+        result = make_snapshot(sample, NOW)
+        self.assertEqual(result["busy"]["2026-11-12"], [[0, 1440]])
+
     def test_empty_calendar_fails_closed(self):
         with self.assertRaises(ValueError):
             make_snapshot((HEAD + TAIL).encode(), NOW)
