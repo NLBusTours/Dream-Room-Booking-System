@@ -594,6 +594,15 @@
     if (mins <= 0) mins += 1440;
     return mins;
   }
+  function overlapsDailySwitchover() {
+    if (!start.value || !end.value) return false;
+    const [sh,sm] = start.value.split(':').map(Number);
+    const [eh,em] = end.value.split(':').map(Number);
+    const first = sh*60+sm, last = eh*60+em;
+    const overlaps = (a,b) => a < 840 && b > 780;
+    return last > first ? overlaps(first,last)
+      : overlaps(first,1440) || overlaps(0,last);
+  }
   function updateDuration() {
     const mins = durationMinutes();
     if (isStyledWedding()) {
@@ -699,7 +708,8 @@
     const type = typeInput.value;
     if (!type || type === 'host' || !rawDate.value || rawDate.value < today) return null;
     const mins = durationMinutes();
-    if (mins === null || mins > 960 || (type === 'children' && mins !== 120)) return null;
+    if (mins === null || mins > 960 || overlapsDailySwitchover() ||
+        (type === 'children' && mins !== 120)) return null;
     if (type === 'children' && !childSlot.value) return null;
     if (type === 'shower' && isWeekend(rawDate.value) && !showerChoice.value) return null;
     if (type === 'wedding') {
@@ -758,6 +768,10 @@
       const requiredHours = selectedWeddingHours();
       get('estimateNotes').textContent = type === 'wedding' && !weddingPackage.value
         ? 'Choose a wedding rental package and your preferred access times to see your estimate.'
+        : durationMinutes() !== null && durationMinutes() > 960
+        ? 'Your requested hours are invalid or exceed 16 hours. Please adjust your access times.'
+        : overlapsDailySwitchover()
+        ? '1:00–2:00 PM is reserved for our daily switchover and cannot be booked. Please choose hours ending by 1 PM or starting at 2 PM.'
         : type === 'wedding' && requiredHours !== null && durationMinutes() !== requiredHours*60
         ? 'Your selected wedding package includes exactly ' + requiredHours + ' hours. Adjust the start and end times to match.'
         : 'Choose a date, time slot and any add-on quantities to view your estimate.';
@@ -836,6 +850,9 @@
       const mins=durationMinutes();
       if (mins===null || mins>960) {
         showFeedback('Please check the start and end times. For rentals longer than 16 hours, email the team.');start.focus();return;
+      }
+      if (overlapsDailySwitchover()) {
+        showFeedback('1:00–2:00 PM is always reserved for our venue switchover. Please choose access hours outside this period.');start.focus();return;
       }
       if (type==='children' && mins!==120) {
         showFeedback('Please request a two-hour window for a children\'s party.');start.focus();return;
