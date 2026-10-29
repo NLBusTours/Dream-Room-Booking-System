@@ -80,6 +80,8 @@
     .decor-tile-caption {font-size:.72rem;color:#6e405b;text-align:center;padding:7px 5px;line-height:1.3;font-weight:650;}
     .decor-sprite {display:block;width:100%;height:100%;background-image:url('assets/real-dream-room-decor.webp');background-size:200% 200%;background-position:var(--photo-x,0%) var(--photo-y,0%);background-repeat:no-repeat;background-color:#f5eaf0;}
     .decor-thumb>.decor-sprite {height:94px;flex:none;}
+    .decor-thumb>.decor-single-thumb {height:94px;width:100%;flex:none;object-fit:cover;object-position:center 35%;display:block;}
+    @media (hover:hover) and (pointer:fine) {.decor-thumb:hover>.decor-single-thumb{filter:brightness(1.06);}}
     @media (hover:hover) and (pointer:fine) {.decor-thumb:hover>.decor-sprite{filter:brightness(1.06);}}
     .decor-addon-choice {display:flex;align-items:center;gap:9px;min-width:0;padding:7px;border:1px solid #ead9e3;border-radius:12px;background:#fff;}
     .decor-addon-choice .check {flex:1;border:0;background:none;padding:6px;min-width:0;}
@@ -102,6 +104,8 @@
     .decor-dialog-heading button {border:1px solid #ddc1cf;border-radius:9px;padding:8px;background:white;cursor:pointer;}
     .decor-dialog-main {display:grid;grid-template-columns:40px minmax(0,1fr) 40px;gap:7px;align-items:center;}
     .decor-expanded-sprite {width:100%;max-height:60vh;aspect-ratio:4/3;border-radius:10px;background-image:url('assets/real-dream-room-decor.webp');background-size:200% 200%;background-position:0% 0%;background-repeat:no-repeat;}
+    .decor-single-large {display:block;max-height:60vh;width:100%;object-fit:contain;border-radius:10px;}
+    .decor-single-large[hidden] {display:none !important;}
     .decor-dialog-main button {border:1px solid #e0d0d8;background:#fff;border-radius:9px;padding:9px 3px;cursor:pointer;}
     .decor-photo-dialog .hint {text-align:center;}
     #weddingPackageBlock p { color:#685763; font-size:.9rem; }
@@ -184,6 +188,7 @@
               <button class="decor-thumb" type="button" data-photo-index="2" aria-label="Enlarge Wedding centrepieces photo"><span class="decor-sprite" style="--photo-x:0%;--photo-y:100%" aria-hidden="true"></span><span class="decor-tile-caption">Wedding centrepieces</span></button>
               <button class="decor-thumb" type="button" data-photo-index="3" aria-label="Enlarge Table linens & chair covers photo"><span class="decor-sprite" style="--photo-x:100%;--photo-y:100%" aria-hidden="true"></span><span class="decor-tile-caption">Table linens & chair covers</span></button>
               <button class="decor-thumb" type="button" data-photo-index="1" aria-label="Enlarge High-rise cocktail tables photo"><span class="decor-sprite" style="--photo-x:100%;--photo-y:0%" aria-hidden="true"></span><span class="decor-tile-caption">High-rise cocktail tables</span></button>
+              <button class="decor-thumb" type="button" data-photo-index="4" aria-label="Enlarge Champagne and floral feature walls photo"><img class="decor-single-thumb" src="https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000034727.jpg/:/rs=w:1300,h:800" alt="The Dream Room pink floral backdrop, decorated arch and champagne display" loading="lazy" width="145" height="94"><span class="decor-tile-caption">Champagne &amp; floral walls · Included</span></button>
             </div>
           </div>
         </div>
@@ -352,9 +357,9 @@
 
   <dialog id="decorPhotoDialog" class="decor-photo-dialog" aria-label="Dream Room décor photo preview">
     <div class="decor-dialog-heading"><strong>Dream Room décor gallery</strong><button type="button" id="closeDecorGallery" aria-label="Close photo preview">✕ Close</button></div>
-    <div class="decor-dialog-main"><button id="prevDecorPhoto" type="button" aria-label="Previous décor photo">❮</button><div id="expandedDecorPhoto" class="decor-expanded-sprite" role="img" aria-label="Enlarged Dream Room décor photograph"></div><button id="nextDecorPhoto" type="button" aria-label="Next décor photo">❯</button></div>
+    <div class="decor-dialog-main"><button id="prevDecorPhoto" type="button" aria-label="Previous décor photo">❮</button><div id="expandedDecorPhoto" class="decor-expanded-sprite" role="img" aria-label="Enlarged Dream Room décor photograph"></div><img id="expandedDecorSingle" class="decor-single-large" alt="The Dream Room pink floral feature wall and champagne wall" src="https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000034727.jpg/:/rs=w:1300,h:800" hidden><button id="nextDecorPhoto" type="button" aria-label="Next décor photo">❯</button></div>
     <p id="decorPhotoCaption" class="hint">Venue styling example. Available décor and layouts may vary.</p>
-    <p class="hint">Photos show our actual décor. Aisle runner, floral columns and the backdrop can be viewed in the ceremony photo; individual setup and placement may vary.</p>
+    <p class="hint">Photos show our actual venue. The champagne display and floral feature wall are included with venue rental; décor placement and arrangements may vary.</p>
   </dialog>
 
   <script>
@@ -364,18 +369,29 @@
     {label:'Aisle runner and ceremony styling',x:'0%',y:'0%'},
     {label:'High-rise cocktail tables',x:'100%',y:'0%'},
     {label:'Wedding centrepieces',x:'0%',y:'100%'},
-    {label:'Table linens and chair covers',x:'100%',y:'100%'}
+    {label:'Table linens and chair covers',x:'100%',y:'100%'},
+    {label:'Champagne and floral feature walls',src:'https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000034727.jpg/:/rs=w:1300,h:800',included:true}
   ];
   const decorPhotoDialog = document.getElementById('decorPhotoDialog');
   const decorPhotoImage = document.getElementById('expandedDecorPhoto');
+  const decorSingleImage = document.getElementById('expandedDecorSingle');
   const decorPhotoCaption = document.getElementById('decorPhotoCaption');
   let activeDecorPhotoIndex = 0;
   function showDecorPhoto(index) {
     activeDecorPhotoIndex = (index + decorItems.length) % decorItems.length;
     const photo = decorItems[activeDecorPhotoIndex];
-    decorPhotoImage.style.backgroundPosition = photo.x + ' ' + photo.y;
-    decorPhotoImage.setAttribute('aria-label', 'The Dream Room: '+photo.label);
-    decorPhotoCaption.textContent = photo.label + ' · Actual venue décor. Final event layouts may vary.';
+    if (photo.src) {
+      decorPhotoImage.hidden = true;
+      decorSingleImage.hidden = false;
+      decorSingleImage.alt = 'The Dream Room: ' + photo.label;
+    } else {
+      decorSingleImage.hidden = true;
+      decorPhotoImage.hidden = false;
+      decorPhotoImage.style.backgroundPosition = photo.x + ' ' + photo.y;
+      decorPhotoImage.setAttribute('aria-label', 'The Dream Room: ' + photo.label);
+    }
+    decorPhotoCaption.textContent = photo.label +
+      (photo.included ? ' · Included with venue rental.' : ' · Actual venue décor. Final event layouts may vary.');
     if (!decorPhotoDialog.open) decorPhotoDialog.showModal();
   }
   document.querySelectorAll('.decor-thumb').forEach(button => {
