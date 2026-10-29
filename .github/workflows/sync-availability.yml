@@ -1,6 +1,11 @@
 name: Dream Room availability sync
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "availability/**"
+      - ".github/workflows/sync-availability.yml"
   schedule:
     - cron: "7,37 * * * *"
   workflow_dispatch:
