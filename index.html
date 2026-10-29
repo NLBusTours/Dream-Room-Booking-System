@@ -206,22 +206,36 @@
         <div id="extrasBlock">
           <div class="form-step"><span class="number">5</span> Optional services</div>
           <p class="hint" style="margin-bottom:12px">Standard venue rental is <strong>$150/hour</strong>. Optional services are charged separately. Select any add-ons for your estimate.</p>
-          <div class="chip-list">
-            <label class="check"><input type="checkbox" name="Add-ons" value="Tables and chairs preset / taken down"> Tables &amp; chairs set up / taken down</label>
-            <label class="check"><input type="checkbox" name="Add-ons" value="Event staff"> Event staff</label>
-            <label class="check"><input type="checkbox" name="Add-ons" value="Post-event cleanup"> Post-event cleanup</label>
-            <label class="check"><input type="checkbox" name="Add-ons" value="Linens"> Linens</label>
-            <label class="check"><input type="checkbox" name="Add-ons" value="Chair covers"> Chair covers</label>
-            <label class="check"><input type="checkbox" name="Add-ons" value="Additional decorations"> Additional decor</label>
-            <label class="check"><input type="checkbox" name="Add-ons" value="Cocktail tables"> Cocktail tables</label>
-            <label class="check"><input type="checkbox" name="Add-ons" value="Photo or character entertainment inquiry"> Photography or character entertainment</label>
+          <div class="chip-list" id="addOnChoices">
+            <label class="check"><input type="checkbox" name="Add-ons" value="Table and chair setup/takedown" data-price="75"> Tables &amp; chairs setup/takedown · $75</label>
+            <label class="check"><input type="checkbox" id="staffAddon" name="Add-ons" value="Event staffing"> Event staff · $25/hour</label>
+            <label class="check"><input type="checkbox" id="cleanAddon" name="Add-ons" value="Post-event cleanup"> Cleanup · $50–$100</label>
+            <label class="check"><input type="checkbox" name="Add-ons" value="Linens" data-price="25"> Linens · $25</label>
+            <label class="check"><input type="checkbox" name="Add-ons" value="Chair covers" data-price="25"> Chair covers · $25</label>
+            <label class="check"><input type="checkbox" id="decorAddon" name="Add-ons" value="Additional decor"> Additional décor · from $25</label>
+            <label class="check"><input type="checkbox" id="cocktailAddon" name="Add-ons" value="Cocktail tables"> Cocktail tables · $20 each</label>
+            <label class="check"><input type="checkbox" id="entertainmentAddon" name="Add-ons" value="Photography / character entertainment"> Photography / character entertainment · custom quote</label>
+          </div>
+          <div class="two">
+            <div class="field" id="staffHoursBlock" hidden><label for="staffHours">Event staff hours</label><input id="staffHours" name="Event staff hours" type="number" min="1" max="16" step="0.5" value="2" disabled><p class="hint">$25 per staff hour, per staff member.</p></div>
+            <div class="field" id="cocktailQtyBlock" hidden><label for="cocktailQty">Number of cocktail tables</label><input id="cocktailQty" name="Cocktail table quantity" type="number" min="1" max="10" step="1" value="1" disabled><p class="hint">$20 per table.</p></div>
           </div>
           <div class="field" style="margin-top:15px"><label for="otherAddons">Anything else you'd like quoted?</label><textarea id="otherAddons" name="Other add-on requests" placeholder="Specific decorations, furniture layouts, bar setup or other ideas."></textarea></div>
         </div>
 
+        <section class="estimate-box" id="estimateBox" hidden aria-live="polite">
+          <div class="eyebrow">Instant estimate</div>
+          <h3>Estimated event total</h3>
+          <div id="estimateRows"></div>
+          <div class="estimate-row"><span>Subtotal</span><strong id="estimateSubtotal">—</strong></div>
+          <div class="estimate-row"><span>HST (15%)</span><strong id="estimateTax">—</strong></div>
+          <div class="estimate-row estimate-grand"><span>Estimated total</span><strong id="estimateTotal">—</strong></div>
+          <p class="hint" id="estimateNotes">Choose a date and time to see an estimate. We will confirm the final quote and availability.</p>
+        </section>
+
         <div class="form-step"><span class="number">✓</span> Final notes</div>
         <div class="field"><label for="notes">Additional details or questions</label><textarea id="notes" name="Notes" placeholder="Anything else our team should know?"></textarea></div>
-        <div class="notice">This is a booking <strong>inquiry</strong>, not a confirmed reservation. Our team will review availability and send a quote. Rental time must include setup and cleanup unless arrangements are made separately.</div>
+        <div class="notice">Our standard venue rental is <strong>$150/hour</strong>. The Saturday/Sunday three-hour shower special is <strong>$350</strong> at the listed daytime slots only. Prices are before 15% HST. This is a booking <strong>inquiry</strong>, not a confirmed reservation. Our team will review availability and send a quote. Rental time must include setup and cleanup unless arrangements are made separately.</div>
         <label class="check consent"><input id="ack" type="checkbox" name="Acknowledgement" value="Agreed" required> I understand that submitting this request does not reserve my date. <span class="req">*</span></label>
         <button id="submitBtn" class="submit" type="submit">Send booking inquiry</button>
         <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
