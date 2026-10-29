@@ -3,10 +3,11 @@
 (function () {
   'use strict';
 
-  // GitHub Actions updates this public, anonymous JSON on main every ~30 minutes.
-  // Use raw.githubusercontent.com rather than GitHub Pages because commits created
-  // by GITHUB_TOKEN do not trigger a new Pages deployment.
-  const SNAPSHOT_URL = 'https://raw.githubusercontent.com/NLBusTours/Dream-Room-Booking-System/main/availability.json';
+  // GitHub Actions edits one public, anonymous issue roughly every 30 minutes.
+  // This avoids repeated code commits and never exposes the private BAND feed.
+  const SNAPSHOT_URL = 'https://api.github.com/repos/NLBusTours/Dream-Room-Booking-System/issues/11';
+  const SNAPSHOT_START = '<!-- DREAM_ROOM_AVAILABILITY_JSON_START';
+  const SNAPSHOT_END = 'DREAM_ROOM_AVAILABILITY_JSON_END -->';
   const MAX_AGE_MS = 120 * 60 * 1000;
 
   function addDay(dateString, count) {
@@ -180,7 +181,13 @@
       const url = SNAPSHOT_URL + '?refresh=' + Math.floor(Date.now() / (5 * 60 * 1000));
       const response = await fetch(url, {cache: 'no-store', headers: {Accept: 'application/json'}});
       if (!response.ok) throw new Error('Calendar snapshot not available');
-      const data = await response.json();
+      const record = await response.json();
+      if (typeof record.body !== 'string') throw new Error('Availability record missing');
+      const start = record.body.indexOf(SNAPSHOT_START);
+      const end = record.body.indexOf(SNAPSHOT_END, start + SNAPSHOT_START.length);
+      if (start < 0 || end < 0) throw new Error('Availability record has no valid snapshot');
+      const raw = record.body.slice(start + SNAPSHOT_START.length, end).trim();
+      const data = JSON.parse(raw);
       if (!snapshotIsCurrent(data, Date.now())) throw new Error('Calendar snapshot is missing or stale');
       snapshot = data;
       state = 'ready';
