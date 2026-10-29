@@ -63,7 +63,7 @@ Mobile-friendly customer-facing booking request page for The Dream Room, Paradis
 ## Read-only booking availability checker
 
 - The customer form now checks selected times against a **sanitized** snapshot of Dream Room's **DR - BAND** calendar. Customers only see 'Open to request', 'Booked', or 'Not verified'. Open is not a booking confirmation.
-- A twice-hourly GitHub Actions workflow reads the private BAND iCal subscription using the `DREAM_ROOM_BAND_ICAL_URL` Actions secret. No private subscription token, customer names or event metadata enter the public website.
-- The checker fails closed whenever the snapshot is missing, malformed, or more than 2 hours old. Booking inquiries continue to work even while the connection is not configured.
+- A twice-hourly GitHub Actions workflow reads the private BAND iCal subscription using the `DREAM_ROOM_BAND_ICAL_URL` Actions secret, then updates one anonymous [availability status issue](https://github.com/NLBusTours/Dream-Room-Booking-System/issues/11) rather than flooding the git commit history. No private subscription token, customer names or event metadata enter the public website.
+- The checker fails closed whenever the issue's snapshot is missing, malformed, or more than 2 hours old. Booking inquiries continue to work even while the connection is not configured.
 - **Required one-time setup:** follow [availability/SETUP.md](availability/SETUP.md), add the secret via GitHub Settings, and manually run the workflow once. The connector cannot set this secret on the owner's behalf.
 - This does not automatically reserve the venue or create/update any events.
