@@ -107,6 +107,15 @@
             <option value="host">Become a Dream Host</option>
           </select>
         </div>
+        <div class="field" id="privateOccasionBlock" hidden>
+          <label for="privateType">What are you celebrating? <span class="req">*</span></label>
+          <select id="privateType" name="Occasion" disabled>
+            <option value="">Select an occasion</option>
+            <option>Baby shower</option><option>Bridal shower</option><option>Birthday</option>
+            <option>Bachelorette</option><option>Anniversary</option>
+            <option>Corporate gathering</option><option>Other private event</option>
+          </select>
+        </div>
 
         <div class="form-step"><span class="number">2</span> Your contact information</div>
         <div class="field"><label for="fullName">Name <span class="req">*</span></label><input id="fullName" name="name" type="text" autocomplete="name" placeholder="Your full name" maxlength="120" required></div>
@@ -121,7 +130,40 @@
             <div class="field"><label for="rawDate">Preferred date <span class="req">*</span></label><input id="rawDate" type="date" required><input id="prettyDate" type="hidden" name="Date"></div>
             <div class="field"><label for="backupDate">Alternate date (optional)</label><input id="backupDate" type="date" name="Alternate date"></div>
           </div>
-          <div class="two">
+          <p class="hint" id="sundayShowerReminder" hidden>Our Sunday 3-hour shower special is available from 10 AM to 1 PM or 2 PM to 5 PM. Select a Sunday to request this option.</p>
+          <div id="sundayShowerBlock" class="section" hidden>
+            <h3>Sunday 3-hour shower special</h3>
+            <p class="hint">Available for baby showers and bridal showers on Sundays only. Choose a set time slot, or request a standard rental for other hours.</p>
+            <div class="field"><label for="showerBookingOption">Rental option <span class="req">*</span></label>
+              <select id="showerBookingOption" name="Shower rental option" disabled>
+                <option value="">Choose a rental option</option>
+                <option value="special">Sunday 3-hour special</option>
+                <option value="standard">Standard rental (other hours)</option>
+              </select>
+            </div>
+            <div class="field" id="sundayShowerSlotsBlock" hidden><label for="sundayShowerSlot">Choose your 3-hour time slot <span class="req">*</span></label>
+              <select id="sundayShowerSlot" name="Sunday shower time slot" disabled>
+                <option value="">Choose a time slot</option>
+                <option value="10:00|13:00">10:00 AM – 1:00 PM</option>
+                <option value="14:00|17:00">2:00 PM – 5:00 PM</option>
+              </select>
+              <p class="hint">These are the only time slots offered with the Sunday special. Please include setup and cleanup within your booking.</p>
+            </div>
+          </div>
+          <div id="childSlotsBlock" class="section" hidden>
+            <h3>Children's party time slots</h3>
+            <p class="hint">To make room for more celebrations, children's parties are offered in the following two-hour time slots.</p>
+            <div class="field"><label for="childTimeSlot">Preferred party time <span class="req">*</span></label>
+              <select id="childTimeSlot" name="Children's party time slot" disabled>
+                <option value="">Choose a time slot</option>
+                <option value="10:00|12:00">10:00 AM – 12:00 PM</option>
+                <option value="11:00|13:00">11:00 AM – 1:00 PM</option>
+                <option value="14:00|16:00">2:00 PM – 4:00 PM</option>
+              </select>
+              <p class="hint">All time slots are requests and subject to availability. Please include any special setup or cleanup needs in your notes.</p>
+            </div>
+          </div>
+          <div id="customTimesBlock" class="two">
             <div class="field"><label for="startTime">Access start time <span class="req">*</span></label><input id="startTime" name="Start time" type="time" step="900" required></div>
             <div class="field"><label for="endTime">Access end time <span class="req">*</span></label><input id="endTime" name="End time" type="time" step="900" required></div>
           </div>
@@ -133,7 +175,6 @@
         <fieldset class="section" id="section-private" data-section="private" hidden disabled>
           <legend class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden">Private event details</legend>
           <h3>Your celebration</h3>
-          <div class="field"><label for="privateType">Occasion <span class="req">*</span></label><select id="privateType" name="Occasion" data-required><option value="">Select an occasion</option><option>Baby shower</option><option>Bridal shower</option><option>Birthday</option><option>Bachelorette</option><option>Anniversary</option><option>Corporate gathering</option><option>Other private event</option></select></div>
           <div class="field"><label for="privateDetails">How would you like to use the space?</label><textarea id="privateDetails" name="Celebration details" placeholder="Tell us about your celebration, seating preferences, or decorations."></textarea></div>
         </fieldset>
 
@@ -217,6 +258,17 @@
     const start = document.getElementById('startTime');
     const end = document.getElementById('endTime');
     const count = document.getElementById('guestCount');
+    const privateOccasionBlock = document.getElementById('privateOccasionBlock');
+    const privateOccasion = document.getElementById('privateType');
+    const sundayShowerReminder = document.getElementById('sundayShowerReminder');
+    const sundayShowerBlock = document.getElementById('sundayShowerBlock');
+    const showerOption = document.getElementById('showerBookingOption');
+    const showerSlotBlock = document.getElementById('sundayShowerSlotsBlock');
+    const showerSlot = document.getElementById('sundayShowerSlot');
+    const childSlotsBlock = document.getElementById('childSlotsBlock');
+    const childSlot = document.getElementById('childTimeSlot');
+    const customTimesBlock = document.getElementById('customTimesBlock');
+    const durationHint = document.getElementById('durationHint');
     const feedback = document.getElementById('feedback');
     const submitBtn = document.getElementById('submitBtn');
     document.getElementById('year').textContent = new Date().getFullYear();
@@ -233,9 +285,70 @@
       return new Date(y, m-1, day).toLocaleDateString('en-CA', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
     }
 
+    function isSundayDate(iso) {
+      if (!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(iso)) return false;
+      const [year, month, day] = iso.split('-').map(Number);
+      return new Date(Date.UTC(year, month - 1, day)).getUTCDay() === 0;
+    }
+    function sundaySpecialEligible() {
+      return typeInput.value === 'private' &&
+        (privateOccasion.value === 'Baby shower' || privateOccasion.value === 'Bridal shower') &&
+        isSundayDate(rawDate.value);
+    }
+    function refreshBookingTimes() {
+      const isHost = typeInput.value === 'host';
+      const isChild = typeInput.value === 'children';
+      const eligible = sundaySpecialEligible();
+      const isShower = typeInput.value === 'private' &&
+        (privateOccasion.value === 'Baby shower' || privateOccasion.value === 'Bridal shower');
+      sundayShowerReminder.hidden = !isShower || eligible;
+      const wasFixed = start.readOnly;
+      sundayShowerBlock.hidden = !eligible;
+      showerOption.disabled = !eligible;
+      showerOption.required = eligible;
+      if (!eligible) { showerOption.value = ''; showerSlot.value = ''; }
+      const isSpecial = eligible && showerOption.value === 'special';
+      showerSlotBlock.hidden = !isSpecial;
+      showerSlot.disabled = !isSpecial;
+      showerSlot.required = isSpecial;
+      if (!isSpecial) showerSlot.value = '';
+      childSlotsBlock.hidden = !isChild;
+      childSlot.disabled = !isChild;
+      childSlot.required = isChild;
+      if (!isChild) childSlot.value = '';
+      const fixed = isChild || isSpecial;
+      const waitingForOption = eligible && !showerOption.value;
+      customTimesBlock.hidden = isHost || fixed || waitingForOption;
+      start.required = !isHost && !fixed && !waitingForOption;
+      end.required = !isHost && !fixed && !waitingForOption;
+      if (fixed) {
+        const selected = isChild ? childSlot.value : showerSlot.value;
+        const parts = selected ? selected.split('|') : ['', ''];
+        start.value = parts[0];
+        end.value = parts[1];
+        start.readOnly = true;
+        end.readOnly = true;
+      } else {
+        start.readOnly = false;
+        end.readOnly = false;
+        if (wasFixed) { start.value = ''; end.value = ''; }
+      }
+      if (isChild) {
+        durationHint.textContent = 'Choose one of our two-hour party slots. Booking times are subject to confirmation.';
+      } else if (isSpecial) {
+        durationHint.textContent = 'The Sunday special is a three-hour rental, including setup, decorating, cleanup and takedown.';
+      } else {
+        updateDuration();
+      }
+      durationHint.hidden = isHost || waitingForOption;
+    }
     function changeType() {
       const t = typeInput.value;
       const isHost = t === 'host';
+      const isPrivate = t === 'private';
+      privateOccasionBlock.hidden = !isPrivate;
+      privateOccasion.disabled = !isPrivate;
+      privateOccasion.required = isPrivate;
       sections.forEach(section => {
         const active = section.dataset.section === t;
         section.hidden = !active;
@@ -248,10 +361,16 @@
       extras.hidden = isHost;
       schedule.querySelectorAll('input').forEach(input => { input.disabled = isHost; });
       extras.querySelectorAll('input, textarea').forEach(input => { input.disabled = isHost; });
-      [rawDate,start,end,count].forEach(input => { input.required = !isHost; });
+      [rawDate,count].forEach(input => { input.required = !isHost; });
+      refreshBookingTimes();
       feedback.hidden = true;
     }
     typeInput.addEventListener('change', changeType);
+    privateOccasion.addEventListener('change', refreshBookingTimes);
+    rawDate.addEventListener('change', refreshBookingTimes);
+    showerOption.addEventListener('change', refreshBookingTimes);
+    showerSlot.addEventListener('change', refreshBookingTimes);
+    childSlot.addEventListener('change', refreshBookingTimes);
     changeType();
 
     function durationMinutes() {
@@ -284,6 +403,9 @@
       const isHost = typeInput.value === 'host';
       if (!isHost) {
         if (rawDate.value < today || (backupDate.value && backupDate.value < today)) { showFeedback('Please select a future date.'); rawDate.focus(); return; }
+        if (sundaySpecialEligible() && showerOption.value === 'special' && backupDate.value && !isSundayDate(backupDate.value)) {
+          showFeedback('Please choose a Sunday for your alternate date or leave it blank for the Sunday special.'); backupDate.focus(); return;
+        }
         const mins = durationMinutes();
         if (mins === null || mins > 16*60) { showFeedback('Please double-check your start and end times. For rentals longer than 16 hours, contact our team directly.'); start.focus(); return; }
         if (typeInput.value === 'children' && document.getElementById('childNumber').value && Number(document.getElementById('childNumber').value) > Number(count.value)) {
@@ -297,6 +419,12 @@
       submitBtn.disabled = true;
       submitBtn.textContent = 'Sending your request…';
       const data = new FormData(form);
+      if (typeInput.value === 'children' && childSlot.value) {
+        data.set("Children's party time slot", childSlot.options[childSlot.selectedIndex].textContent.trim());
+      }
+      if (sundaySpecialEligible() && showerOption.value === 'special' && showerSlot.value) {
+        data.set('Sunday shower time slot', showerSlot.options[showerSlot.selectedIndex].textContent.trim());
+      }
       const addOns = data.getAll('Add-ons');
       data.delete('Add-ons');
       if (addOns.length) data.append('Requested add-ons', addOns.join(', '));

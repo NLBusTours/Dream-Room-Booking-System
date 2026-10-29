@@ -5,7 +5,10 @@ Mobile-friendly customer-facing booking request page for The Dream Room, Paradis
 ## Features
 
 - Five pathways: private events, children's parties, weddings, workshops/public events, and Dream Host proposals.
-- Captures contact details, optional alternate date, requested access start/end, and total guest count (maximum 60).
+- Captures contact details, optional alternate date, and total guest count (maximum 60).
+- For Sunday baby and bridal showers, offers a Sunday-only three-hour special at 10 AM–1 PM or 2 PM–5 PM. The special does not include evening hours or other days/event types. Other standard rentals may request flexible access hours.
+- For children's parties, offers 10 AM–12 PM, 11 AM–1 PM, or 2 PM–4 PM as fixed two-hour slots, with no custom time selection. The form does not offer 12–2.
+- Sends selected start/end hours and a readable time-slot label in the booking inquiry.
 - Adds relevant event-specific questions, wedding ceremony seating guidance (32), and optional service requests.
 - Keeps prices off the customer-facing form. Staff can quote after checking availability.
 - Prevents past dates using Newfoundland-local browser date, validates required fields and length of booking.
