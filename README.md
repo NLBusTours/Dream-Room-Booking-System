@@ -43,3 +43,11 @@ Mobile-friendly customer-facing booking request page for The Dream Room, Paradis
 - For Styled & Staffed weddings, base add-ons already covered by the package are suppressed. Cocktail tables and extra custom décor still calculate separately; catering and entertainment remain custom quotes.
 - Estimated totals include 15% HST, but are not binding quotes, paid reservations or guaranteed availability.
 - GoDaddy embed mode is `?embed=1`; update existing GoDaddy HTML section height to allow room for the quote calculator.
+
+## Venue décor photo previews
+
+- The wedding package selector includes a horizontally scrolling gallery of five photos already published on the business's own `dreamroomnl.ca` website. Tapping/clicking any photo opens an enlarged preview with next/previous/close controls.
+- The **Linens**, **Chair covers**, **Additional décor**, and **Cocktail tables** add-ons offer a **View photos** action that opens the same venue gallery without changing the selected add-ons or estimate.
+- Images are examples of the overall venue styling, **not verified item-specific product closeups**, and a disclaimer is displayed. For individual item selection galleries, obtain actual closeup photos for aisle carpet, aisle pillars, centrepieces, table linens, chair covers, champagne wall and high-rise cocktail tables and associate each with its matching item.
+- The existing GoDaddy embed code and `?embed=1` URL are unchanged.
+- The gallery images are served from the business's public GoDaddy image CDN; if the original website removes or changes those media URLs, the thumbnails will need updating.
