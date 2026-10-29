@@ -9,6 +9,9 @@
   const SNAPSHOT_START = '<!-- DREAM_ROOM_AVAILABILITY_JSON_START';
   const SNAPSHOT_END = 'DREAM_ROOM_AVAILABILITY_JSON_END -->';
   const MAX_AGE_MS = 120 * 60 * 1000;
+  const TURNOVER_START = 13 * 60;
+  const TURNOVER_END = 14 * 60;
+  const MAX_RENTAL_MINUTES = 16 * 60;
 
   function addDay(dateString, count) {
     const parts = dateString.split('-').map(Number);
@@ -31,37 +34,75 @@
     return Number.isFinite(generated) && age >= -5 * 60 * 1000 && age <= MAX_AGE_MS;
   }
 
-  // Intervals are half-open [start,end): adjacent events do not block one another.
-  // status is 'available', 'booked' or 'unknown'; available is NOT a reservation.
-  function availabilityFor(snapshot, date, startClock, endClock, nowMs = Date.now()) {
-    if (!snapshotIsCurrent(snapshot, nowMs)) return 'unknown';
+  // The 1–2 PM turnover is a standing venue policy, not a BAND booking.
+  // This is enforced even if the calendar feed becomes unavailable.
+  function bookingParts(date, startClock, endClock) {
     const start = minutes(startClock), end = minutes(endClock);
-    if (start === null || end === null || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return 'unknown';
-
-    const dates = end > start ? [[date, start, end]] :
+    if (start === null || end === null || !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+        start === end) return null;
+    const length = end > start ? end - start : 1440 - start + end;
+    if (length > MAX_RENTAL_MINUTES) return null;
+    return end > start ? [[date, start, end]] :
       [[date, start, 1440], [addDay(date, 1), 0, end]];
-    for (const [day, from, through] of dates) {
-      if (day < snapshot.from_date || day > snapshot.through_date) return 'unknown';
-      const intervals = snapshot.busy[day] || [];
-      if (!Array.isArray(intervals)) return 'unknown';
-      for (const interval of intervals) {
-        if (!Array.isArray(interval) || interval.length !== 2 ||
-            !Number.isInteger(interval[0]) || !Number.isInteger(interval[1]) ||
-            interval[0] < 0 || interval[1] > 1440 || interval[0] >= interval[1]) return 'unknown';
-        if (from < interval[1] && through > interval[0]) return 'booked';
-      }
+  }
+
+  function validBusyIntervals(snapshot, date) {
+    if (date < snapshot.from_date || date > snapshot.through_date) return null;
+    const intervals = snapshot.busy[date] || [];
+    if (!Array.isArray(intervals)) return null;
+    for (const range of intervals) {
+      if (!Array.isArray(range) || range.length !== 2 ||
+          !Number.isInteger(range[0]) || !Number.isInteger(range[1]) ||
+          range[0] < 0 || range[1] > 1440 || range[0] >= range[1]) return null;
+    }
+    return intervals;
+  }
+
+  // Intervals are half-open [start,end); back-to-back bookings do not overlap.
+  // 'turnover' is different from 'booked', so no fictitious BAND event is shown.
+  function availabilityFor(snapshot, date, startClock, endClock, nowMs = Date.now()) {
+    const parts = bookingParts(date, startClock, endClock);
+    if (!parts) return 'invalid';
+    if (parts.some(([day, from, through]) => from < TURNOVER_END && through > TURNOVER_START)) {
+      return 'turnover';
+    }
+    if (!snapshotIsCurrent(snapshot, nowMs)) return 'unknown';
+    for (const [day, from, through] of parts) {
+      const intervals = validBusyIntervals(snapshot, day);
+      if (!intervals) return 'unknown';
+      if (intervals.some(([busyStart, busyEnd]) => from < busyEnd && through > busyStart)) return 'booked';
     }
     return 'available';
   }
 
+  function formatMinute(minute) {
+    const hour = Math.floor(minute / 60) % 24;
+    const mm = String(minute % 60).padStart(2, '0');
+    return (hour % 12 || 12) + ':' + mm + ' ' + (hour < 12 ? 'AM' : 'PM');
+  }
+
+  function formatOccupiedHours(snapshot, date, nowMs = Date.now()) {
+    if (!snapshotIsCurrent(snapshot, nowMs)) return null;
+    const intervals = validBusyIntervals(snapshot, date);
+    if (!intervals) return null;
+    if (!intervals.length) return 'No calendar bookings or holds recorded for this date.';
+    if (intervals.length === 1 && intervals[0][0] === 0 && intervals[0][1] === 1440) {
+      return 'Calendar booked/held: All day.';
+    }
+    return 'Calendar booked/held: ' +
+      intervals.map(([a, b]) => formatMinute(a) + '–' + formatMinute(b)).join('; ') + '.';
+  }
+
   // Export testable, pure calendar calculations in Node.
   if (typeof document === 'undefined') {
-    if (typeof module !== 'undefined') module.exports = {addDay, minutes, snapshotIsCurrent, availabilityFor};
+    if (typeof module !== 'undefined') module.exports = {addDay, minutes, snapshotIsCurrent, availabilityFor, formatOccupiedHours, bookingParts};
     return;
   }
 
   const byId = id => document.getElementById(id);
   const panel = byId('availabilityPanel');
+  const dailyHoursPanel = byId('dailyUnavailability');
+  const dailyBookedHours = byId('dailyBookedHours');
   if (!panel) return;
   const message = byId('availabilityMessage');
   const slots = byId('availabilitySlots');
@@ -98,6 +139,8 @@
     const el = document.createElement('span');
     el.className = 'availability-tag ' + code;
     el.textContent = code === 'booked' ? 'Booked' :
+      code === 'turnover' ? 'Unavailable · switchover' :
+      code === 'invalid' ? 'Invalid hours' :
       code === 'available' ? 'Open to request' :
       code === 'request' ? 'Request only' :
       code === 'checking' ? 'Checking…' :
@@ -138,7 +181,7 @@
       button.type = 'button';
       button.className = 'slot-choice';
       button.setAttribute('aria-pressed', String(config.field.value === option.value));
-      button.disabled = !day || status === 'booked' || status === 'checking';
+      button.disabled = !day || status === 'booked' || status === 'turnover' || status === 'invalid' || status === 'checking';
       const text = document.createElement('span');
       text.className = 'slot-title';
       text.textContent = option.textContent.trim();
@@ -157,8 +200,8 @@
     const selected = config.field.value;
     if (fresh && day && selected && selected !== 'other') {
       const parts = selected.split('|');
-      if (availabilityFor(snapshot, day, parts[0], parts[1]) === 'booked') {
-        chosenBookedWarnings[config.label] = 'That time is already booked. Please choose another date or request a different time.';
+      if (['booked','turnover','invalid'].includes(availabilityFor(snapshot, day, parts[0], parts[1]))) {
+        chosenBookedWarnings[config.label] = 'That time is unavailable. Please choose another date or request a different time.';
         config.field.value = '';
         config.field.dispatchEvent(new Event('change', {bubbles: true}));
         return;
@@ -189,6 +232,14 @@
     const type = typeField.value;
     const day = dateField.value;
     const fresh = state === 'ready' && snapshotIsCurrent(snapshot, Date.now());
+    dailyHoursPanel.hidden = !day || !type || type === 'host';
+    if (!dailyHoursPanel.hidden) {
+      dailyBookedHours.textContent = fresh
+        ? formatOccupiedHours(snapshot, day)
+        : state === 'idle' || state === 'loading'
+          ? 'Checking the calendar for booked or held hours…'
+          : 'Booked hours cannot be verified right now. The 1–2 PM switchover remains unavailable.';
+    }
     for (const config of choices) renderChoices(config, fresh);
 
     // When a fixed-slot category is selected, availability is already shown
@@ -222,9 +273,20 @@
       if (fresh) message.textContent = 'Enter your requested hours to check for booking conflicts.';
       return;
     }
-    const code = fresh ? availabilityFor(snapshot, day, begin, end) : 'unknown';
-    message.textContent = code === 'booked'
-      ? 'Your requested hours overlap an existing booking. Please choose another time or date.'
+    const code = availabilityFor(fresh ? snapshot : null, day, begin, end);
+    const weddingPackage = byId('weddingPackage');
+    const requiredHours = type === 'wedding' && weddingPackage &&
+      (weddingPackage.value === 'styled4' ? 4 : weddingPackage.value === 'styled8' ? 8 : null);
+    const parts = bookingParts(day, begin, end);
+    const selectedMinutes = parts && (minutes(end) - minutes(begin) + 1440) % 1440;
+    message.textContent = code === 'invalid'
+      ? 'Those access times are invalid or longer than 16 hours. Please select a valid start and end time.'
+      : requiredHours !== null && selectedMinutes !== requiredHours * 60
+      ? 'This wedding package requires exactly ' + requiredHours + ' hours of access. Please adjust your end time.'
+      : code === 'turnover'
+      ? 'Your requested hours include our 1:00–2:00 PM switchover. That hour cannot be booked. Choose a time ending by 1 PM or starting at 2 PM.'
+      : code === 'booked'
+      ? 'Your requested hours overlap the booked/held hours shown above. Please choose another time or date.'
       : code === 'available'
       ? 'These hours appear open to request! Our team will confirm your booking.'
       : 'We cannot verify these hours right now. You can still submit an inquiry for staff confirmation.';
@@ -281,27 +343,41 @@
   }
   // Use the visible card group for required choices; the hidden select is
   // still submitted by the existing form workflow.
+  // Capture before the form's email handler. A switchover or verified calendar
+  // conflict is not a valid request, whether it comes from a card or manual times.
   form.addEventListener('submit', event => {
     const type = typeField.value;
+    if (!type || type === 'host' || !dateField.value) return;
     const config = type === 'children' ? choices[1] :
       type === 'shower' && isWeekend(dateField.value) ? choices[0] : null;
-    if (!config || !dateField.value) return;
-    const value = config.field.value;
-    let error = !value ? 'Please select a time slot or request another time.' : '';
-    if (!error && value !== 'other' && state === 'ready' &&
-        snapshotIsCurrent(snapshot, Date.now())) {
-      const [begin, end] = value.split('|');
-      if (availabilityFor(snapshot, dateField.value, begin, end) === 'booked') {
-        error = 'That time is booked. Please choose another date or request another time.';
+    let error = '';
+    let target = panel;
+    if (config && !config.field.value) {
+      error = 'Please select a time slot or request another time.';
+      target = config.host;
+    } else if (startField.value && endField.value) {
+      const code = availabilityFor(snapshot, dateField.value, startField.value, endField.value);
+      if (code === 'turnover') error = '1:00–2:00 PM is reserved for our daily switchover and cannot be booked. Please change your hours.';
+      else if (code === 'booked') error = 'Your requested hours overlap the booked/held times above. Please select another date or time.';
+      else if (code === 'invalid') error = 'Please choose valid access times, no more than 16 hours apart.';
+      const packageValue = byId('weddingPackage')?.value;
+      const hours = type === 'wedding' && (packageValue === 'styled4' ? 4 : packageValue === 'styled8' ? 8 : null);
+      const duration = (minutes(endField.value) - minutes(startField.value) + 1440) % 1440;
+      if (!error && hours !== null && duration !== hours * 60) {
+        error = 'This wedding package must have exactly ' + hours + ' hours of access.';
       }
     }
     if (!error) return;
     event.preventDefault();
     event.stopImmediatePropagation();
-    chosenBookedWarnings[config.label] = error;
-    if (value && value !== 'other') config.field.value = '';
-    render();
-    config.host.scrollIntoView({behavior: 'smooth', block: 'center'});
+    if (config && !config.field.value) {
+      chosenBookedWarnings[config.label] = error;
+      render();
+    } else {
+      panel.hidden = false;
+      message.textContent = error;
+    }
+    target.scrollIntoView({behavior:'smooth',block:'center'});
   }, true);
   for (const field of [startField, endField]) field.addEventListener('input', changed);
   refresh.addEventListener('click', () => load(true));
