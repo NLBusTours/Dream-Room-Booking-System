@@ -71,6 +71,12 @@
     body.embed-view .mast, body.embed-view .aside, body.embed-view footer { display:none; }
     body.embed-view .wrap.main-grid { width:100%; max-width:920px; margin:0 auto; padding:0; display:block; }
     body.embed-view .form-panel { border:none; box-shadow:none; border-radius:0; background:transparent; padding:20px 12px; }
+    .estimate-box { background:#f7eff4; border:1px solid #e3cdd9; border-radius:15px; margin:22px 0 12px; padding:22px; }
+    .estimate-box h3 { font-size:1.48rem; margin:5px 0 16px; }
+    .estimate-row { display:flex; justify-content:space-between; gap:15px; border-bottom:1px solid #e7d9e2; padding:9px 0; font-size:.94rem; }
+    .estimate-row strong { font-variant-numeric:tabular-nums; white-space:nowrap; }
+    .estimate-grand { border-bottom:none; border-top:2px solid #b689a0; font-size:1.1rem; color:var(--rose-dark); margin-top:7px; }
+    .estimate-box .hint { margin-top:12px; }
     @media (max-width:840px) { .main-grid { grid-template-columns:1fr; } .aside { grid-template-columns:repeat(2,minmax(0,1fr)); } }
     @media (max-width:580px) { .hero { grid-template-columns:1fr; padding:26px 0 48px; } .hero-symbol { display:none; } .two,.chip-list,.aside { grid-template-columns:1fr; } .form-panel { padding:21px 17px; } .main-grid { margin-top:-20px; } h1 { font-size:2.45rem; } }
     @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
@@ -104,23 +110,14 @@
         <div class="field"><label for="eventType">What are you planning? <span class="req">*</span></label>
           <select id="eventType" name="Event type" required>
             <option value="">Select your event</option>
-            <option value="private">Private rental / celebration</option>
+            <option value="private">Private Event / Celebration</option>
+            <option value="shower">Baby / Bridal Shower</option>
             <option value="children">Children's party</option>
             <option value="wedding">Wedding / ceremony / reception</option>
             <option value="public">Workshop / class / public event</option>
             <option value="host">Become a Dream Host</option>
           </select>
         </div>
-        <div class="field" id="privateOccasionBlock" hidden>
-          <label for="privateType">What are you celebrating? <span class="req">*</span></label>
-          <select id="privateType" name="Occasion" disabled>
-            <option value="">Select an occasion</option>
-            <option>Baby shower</option><option>Bridal shower</option><option>Birthday</option>
-            <option>Bachelorette</option><option>Anniversary</option>
-            <option>Corporate gathering</option><option>Other private event</option>
-          </select>
-        </div>
-
         <div class="form-step"><span class="number">2</span> Your contact information</div>
         <div class="field"><label for="fullName">Name <span class="req">*</span></label><input id="fullName" name="name" type="text" autocomplete="name" placeholder="Your full name" maxlength="120" required></div>
         <div class="two">
@@ -128,35 +125,30 @@
           <div class="field"><label for="phone">Phone <span class="req">*</span></label><input id="phone" name="Phone" type="tel" autocomplete="tel" placeholder="(709) 555-1234" required></div>
         </div>
 
-        <div class="form-step" id="scheduleHeading"><span class="number">3</span> Date, time &amp; guests</div>
-        <div id="scheduleBlock">
+        <div class="form-step" id="scheduleHeading" hidden><span class="number">3</span> Date, time &amp; guests</div>
+        <div id="scheduleBlock" hidden>
           <div class="two">
             <div class="field"><label for="rawDate">Preferred date <span class="req">*</span></label><input id="rawDate" type="date" required><input id="prettyDate" type="hidden" name="Date"></div>
             <div class="field"><label for="backupDate">Alternate date (optional)</label><input id="backupDate" type="date" name="Alternate date"></div>
           </div>
-          <p class="hint" id="sundayShowerReminder" hidden>Our Sunday 3-hour shower special is available from 10 AM to 1 PM or 2 PM to 5 PM. Select a Sunday to request this option.</p>
-          <div id="sundayShowerBlock" class="section" hidden>
-            <h3>Sunday 3-hour shower special</h3>
-            <p class="hint">Available for baby showers and bridal showers on Sundays only. Choose a set time slot, or request a standard rental for other hours.</p>
-            <div class="field"><label for="showerBookingOption">Rental option <span class="req">*</span></label>
-              <select id="showerBookingOption" name="Shower rental option" disabled>
-                <option value="">Choose a rental option</option>
-                <option value="special">Sunday 3-hour special</option>
-                <option value="standard">Request another time (standard rental)</option>
-              </select>
-            </div>
-            <div class="field" id="sundayShowerSlotsBlock" hidden><label for="sundayShowerSlot">Choose your 3-hour time slot <span class="req">*</span></label>
-              <select id="sundayShowerSlot" name="Sunday shower time slot" disabled>
+          <div id="showerBookingBlock" class="section" hidden>
+            <h3>Weekend three-hour shower special</h3>
+            <p class="hint">Baby and bridal showers only. Saturdays and Sundays offer a $350 three-hour special at either of the times below. Other times are $150/hour.</p>
+            <div class="field">
+              <label for="showerTimeChoice">Select your rental time <span class="req">*</span></label>
+              <select id="showerTimeChoice" name="Shower rental time" disabled>
                 <option value="">Choose a time slot</option>
-                <option value="10:00|13:00">10:00 AM – 1:00 PM</option>
-                <option value="14:00|17:00">2:00 PM – 5:00 PM</option>
+                <option value="10:00|13:00">10:00 AM – 1:00 PM · $350 special</option>
+                <option value="14:00|17:00">2:00 PM – 5:00 PM · $350 special</option>
+                <option value="other">Request another time · $150/hour</option>
               </select>
-              <p class="hint">These are the only time slots offered with the Sunday special. Please include setup and cleanup within your booking.</p>
+              <p class="hint">No evening promotional slots. Setup and cleanup must fit within the booked hours.</p>
             </div>
           </div>
+          <p class="hint" id="weekdayShowerHint" hidden>The three-hour shower special is available Saturdays and Sundays only. Weekday rentals are $150/hour.</p>
           <div id="childSlotsBlock" class="section" hidden>
             <h3>Children's party time slots</h3>
-            <p class="hint">To make room for more celebrations, children's parties are offered in the following two-hour time slots.</p>
+            <p class="hint">Choose a preferred two-hour time slot, or request another time for approval.</p>
             <div class="field"><label for="childTimeSlot">Preferred party time <span class="req">*</span></label>
               <select id="childTimeSlot" name="Children's party time slot" disabled>
                 <option value="">Choose a time slot</option>
@@ -213,7 +205,7 @@
 
         <div id="extrasBlock">
           <div class="form-step"><span class="number">5</span> Optional services</div>
-          <p class="hint" style="margin-bottom:12px">Select anything you'd like included in your quote. These are not automatically included with a venue rental.</p>
+          <p class="hint" style="margin-bottom:12px">Standard venue rental is <strong>$150/hour</strong>. Optional services are charged separately. Select any add-ons for your estimate.</p>
           <div class="chip-list">
             <label class="check"><input type="checkbox" name="Add-ons" value="Tables and chairs preset / taken down"> Tables &amp; chairs set up / taken down</label>
             <label class="check"><input type="checkbox" name="Add-ons" value="Event staff"> Event staff</label>
