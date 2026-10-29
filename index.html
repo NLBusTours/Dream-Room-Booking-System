@@ -71,6 +71,10 @@
     body.embed-view .mast, body.embed-view .aside, body.embed-view footer { display:none; }
     body.embed-view .wrap.main-grid { width:100%; max-width:920px; margin:0 auto; padding:0; display:block; }
     body.embed-view .form-panel { border:none; box-shadow:none; border-radius:0; background:transparent; padding:20px 12px; }
+    #weddingPackageBlock p { color:#685763; font-size:.9rem; }
+    #weddingPackageBlock p strong { color:var(--rose-dark); }
+    #weddingIncludedNotice { margin-top:10px; }
+    .check.wedding-included { opacity:.68; }
     .estimate-box { background:#f7eff4; border:1px solid #e3cdd9; border-radius:15px; margin:22px 0 12px; padding:22px; }
     .estimate-box h3 { font-size:1.48rem; margin:5px 0 16px; }
     .estimate-row { display:flex; justify-content:space-between; gap:15px; border-bottom:1px solid #e7d9e2; padding:9px 0; font-size:.94rem; }
@@ -117,6 +121,27 @@
             <option value="public">Workshop / class / public event</option>
             <option value="host">Become a Dream Host</option>
           </select>
+        </div>
+        <div id="weddingPackageBlock" class="section" hidden>
+          <h3>Wedding rental options</h3>
+          <div class="field">
+            <label for="weddingPackage">Choose your wedding package <span class="req">*</span></label>
+            <select id="weddingPackage" name="Wedding package" disabled>
+              <option value="">Select a wedding rental option</option>
+              <option value="hourly">Base Venue Rental (DIY) · $150/hour</option>
+              <option value="styled4">Styled &amp; Staffed · 4 hours · $800</option>
+              <option value="styled8">Styled &amp; Staffed · 8 hours · $1,400</option>
+            </select>
+          </div>
+          <p class="hint">Maximum 60 people. Ceremony seating for 32; reception seating for up to 48 in the main room and 12 in the dining room.</p>
+          <div id="weddingDIYDetails" hidden>
+            <p><strong>Base venue rental · $150/hour.</strong> Exclusive use of the pre-decorated venue, with floral feature wall, champagne wall, backdrops, lounge furniture, Bluetooth speaker, photo lighting, rectangular tables and chairs, kitchenette, and free on-site parking.</p>
+            <p class="hint">DIY setup, teardown and cleanup. Optional paid services are listed below.</p>
+          </div>
+          <div id="weddingStyledDetails" hidden>
+            <p><strong>Styled &amp; Staffed package.</strong> Includes venue use, on-site event staff, table and chair setup, teardown and cleanup, arranged rectangular tables and chairs, table linens, chair covers, aisle carpet, aisle pillars, centerpieces and other included wedding décor.</p>
+            <p class="hint">Also includes the floral feature wall, champagne wall, backdrops, lounge furniture, Bluetooth speaker, photo lighting, kitchenette and free parking. High-rise cocktail tables, additional custom décor, catering, photography and entertainment may be requested separately.</p>
+          </div>
         </div>
         <div class="form-step"><span class="number">2</span> Your contact information</div>
         <div class="field"><label for="fullName">Name <span class="req">*</span></label><input id="fullName" name="name" type="text" autocomplete="name" placeholder="Your full name" maxlength="120" required></div>
@@ -205,16 +230,18 @@
 
         <div id="extrasBlock" hidden>
           <div class="form-step"><span class="number">5</span> Optional services</div>
-          <p class="hint" style="margin-bottom:12px">Standard venue rental is <strong>$150/hour</strong>. Optional services are charged separately. Select any add-ons for your estimate.</p>
+          <p class="hint" style="margin-bottom:12px">Standard venue rental is <strong>$150/hour</strong>. Optional services are charged separately. Select extras beyond your venue rental or package for an estimate.</p>
+          <p class="notice" id="weddingIncludedNotice" hidden><strong>Included in Styled &amp; Staffed:</strong> event staffing, table and chair arrangement/setup, takedown, cleanup, table linens, chair covers, aisle décor and centrepieces. Those included services are not charged again below.</p>
           <div class="chip-list" id="addOnChoices">
-            <label class="check"><input type="checkbox" name="Add-ons" value="Table and chair setup/takedown" data-price="75"> Tables &amp; chairs setup/takedown · $75</label>
-            <label class="check"><input type="checkbox" id="staffAddon" name="Add-ons" value="Event staffing"> Event staff · $25/hour</label>
-            <label class="check"><input type="checkbox" id="cleanAddon" name="Add-ons" value="Post-event cleanup"> Cleanup · $50–$100</label>
-            <label class="check"><input type="checkbox" name="Add-ons" value="Linens" data-price="25"> Linens · $25</label>
-            <label class="check"><input type="checkbox" name="Add-ons" value="Chair covers" data-price="25"> Chair covers · $25</label>
+            <label class="check"><input type="checkbox" name="Add-ons" value="Table and chair setup/takedown" data-price="75" data-wedding-included="true"> Tables &amp; chairs setup/takedown · $75</label>
+            <label class="check"><input type="checkbox" id="staffAddon" name="Add-ons" value="Event staffing" data-wedding-included="true"> Event staff · $25/hour</label>
+            <label class="check"><input type="checkbox" id="cleanAddon" name="Add-ons" value="Post-event cleanup" data-wedding-included="true"> Cleanup · $50–$100</label>
+            <label class="check"><input type="checkbox" name="Add-ons" value="Linens" data-price="25" data-wedding-included="true"> Linens · $25</label>
+            <label class="check"><input type="checkbox" name="Add-ons" value="Chair covers" data-price="25" data-wedding-included="true"> Chair covers · $25</label>
             <label class="check"><input type="checkbox" id="decorAddon" name="Add-ons" value="Additional decor"> Additional décor · from $25</label>
             <label class="check"><input type="checkbox" id="cocktailAddon" name="Add-ons" value="Cocktail tables"> Cocktail tables · $20 each</label>
             <label class="check"><input type="checkbox" id="entertainmentAddon" name="Add-ons" value="Photography / character entertainment"> Photography / character entertainment · custom quote</label>
+            <label class="check"><input type="checkbox" id="cateringAddon" name="Add-ons" value="Catering inquiry"> Catering · custom quote</label>
           </div>
           <div class="two">
             <div class="field" id="staffHoursBlock" hidden><label for="staffHours">Event staff hours</label><input id="staffHours" name="Event staff hours" type="number" min="1" max="16" step="0.5" value="2" disabled><p class="hint">$25 per staff hour, per staff member.</p></div>
@@ -247,7 +274,7 @@
         <ul><li>Maximum venue capacity: 60 people</li><li>Main room seated: up to 48</li><li>Dining room seated: up to 12 additional guests</li><li>Ceremony seating: up to 32</li><li>Two bathrooms, floral wall, drapery, Bluetooth speakers and photo-friendly backdrops</li></ul>
       </section>
       <section class="panel tint"><div class="eyebrow">Good to know</div><h2>Make it yours</h2>
-        <ul><li>Bring your own food and beverages, including BYOB</li><li>Kitchenette with fridge, microwave, toaster oven, air fryer and hot plate</li><li>Decorated space and available furniture are included, but setup, takedown and cleanup are normally DIY</li><li>Linens and disposable plates, cups, napkins and cutlery are not included unless arranged</li><li>Access begins and ends at your booked times</li></ul>
+        <ul><li>Bring your own food and beverages, including BYOB</li><li>Kitchenette with fridge, microwave, toaster oven, air fryer and hot plate</li><li>Decorated space and available furniture are included; setup, takedown and cleanup are DIY unless you book a staffed package or purchase an add-on</li><li>Linens and disposable plates, cups, napkins and cutlery are not included unless arranged</li><li>Access begins and ends at your booked times</li></ul>
       </section>
       <section class="panel"><div class="eyebrow">Visit us</div><h2>Paradise, NL</h2><p>69 Karwood Drive, rear parking lot entrance. Want to view the venue? Email us to arrange a private showing.</p><p><a href="mailto:DreamRoomNL@gmail.com?subject=The%20Dream%20Room%20Viewing%20Request">DreamRoomNL@gmail.com</a></p></section>
     </aside>
