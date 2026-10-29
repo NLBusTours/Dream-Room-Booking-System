@@ -87,15 +87,16 @@
     .decor-addon-choice .check {flex:1;border:0;background:none;padding:6px;min-width:0;}
     .decor-photo-button {position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;flex:none;width:90px;background:none;border:0;color:#74435d;font-size:.66rem;text-align:center;padding:0;cursor:zoom-in;text-decoration:none;}
     .decor-photo-image {position:relative;display:block;width:86px;height:70px;border-radius:10px;box-shadow:0 3px 9px rgba(76,32,54,.15);border:2px solid #e6cfdb;z-index:1;}
-    .decor-photo-button .decor-sprite {border-radius:8px;transition:transform .22s ease,box-shadow .22s ease;}
+    .decor-photo-button .decor-sprite, .decor-photo-button .decor-cover-image {border-radius:8px;transition:transform .22s ease,box-shadow .22s ease;}
+    .decor-photo-button .decor-cover-image {width:100%;height:100%;object-fit:cover;display:block;}
     .decor-zoom-icon {position:absolute;right:3px;bottom:3px;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.94);box-shadow:0 1px 4px #5f34494d;color:#7c3c62;font-weight:900;font-size:1rem;}
     .decor-preview-caption {line-height:1.25;max-width:100%;}
     @media (hover:hover) and (pointer:fine) {
       .decor-photo-button:hover {z-index:20;}
-      .decor-photo-button:hover .decor-sprite {transform:scale(2.35);box-shadow:0 9px 26px rgba(50,25,42,.3);position:relative;z-index:20;transform-origin:right center;}
+      .decor-photo-button:hover .decor-sprite, .decor-photo-button:hover .decor-cover-image {transform:scale(2.35);box-shadow:0 9px 26px rgba(50,25,42,.3);position:relative;z-index:20;transform-origin:right center;}
       .decor-photo-button:hover .decor-zoom-icon {z-index:21;}
     }
-    @media (prefers-reduced-motion:reduce) {.decor-photo-button .decor-sprite{transition:none;}}
+    @media (prefers-reduced-motion:reduce) {.decor-photo-button .decor-sprite,.decor-photo-button .decor-cover-image{transition:none;}}
     @media (max-width:580px) {.decor-addon-choice {min-height:95px;} .decor-photo-button{width:98px;} .decor-photo-image{width:92px;height:74px;}}
 
     .decor-photo-dialog {width:min(94vw,780px);max-height:90vh;border:1px solid #e4c9d7;border-radius:16px;background:#fff9fc;color:var(--ink);padding:16px;}
@@ -213,8 +214,9 @@
             <div class="decor-photo-strip">
               <button class="decor-thumb" type="button" data-photo-index="0" aria-label="Enlarge Aisle runner & ceremony styling photo"><span class="decor-sprite" style="--photo-x:0%;--photo-y:0%" aria-hidden="true"></span><span class="decor-tile-caption">Aisle runner & ceremony styling</span></button>
               <button class="decor-thumb" type="button" data-photo-index="2" aria-label="Enlarge Wedding centrepieces photo"><span class="decor-sprite" style="--photo-x:0%;--photo-y:100%" aria-hidden="true"></span><span class="decor-tile-caption">Wedding centrepieces</span></button>
-              <button class="decor-thumb" type="button" data-photo-index="3" aria-label="Enlarge Table linens & chair covers photo"><span class="decor-sprite" style="--photo-x:100%;--photo-y:100%" aria-hidden="true"></span><span class="decor-tile-caption">Table linens & chair covers</span></button>
+              <button class="decor-thumb" type="button" data-photo-index="3" aria-label="Enlarge Table linens & chair covers photo"><span class="decor-sprite" style="--photo-x:100%;--photo-y:100%" aria-hidden="true"></span><span class="decor-tile-caption">Table linens</span></button>
               <button class="decor-thumb" type="button" data-photo-index="1" aria-label="Enlarge High-rise cocktail tables photo"><span class="decor-sprite" style="--photo-x:100%;--photo-y:0%" aria-hidden="true"></span><span class="decor-tile-caption">High-rise cocktail tables</span></button>
+              <button class="decor-thumb" type="button" data-photo-index="5" aria-label="Enlarge Chair covers photo"><img class="decor-single-thumb" src="assets/chair-covers.webp" alt="The Dream Room white fitted chair covers arranged around a long event table" loading="lazy" width="145" height="94"><span class="decor-tile-caption">Chair covers</span></button>
               <button class="decor-thumb" type="button" data-photo-index="4" aria-label="Enlarge Champagne and floral feature walls photo"><img class="decor-single-thumb" src="https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000034727.jpg/:/rs=w:1300,h:800" alt="The Dream Room pink floral backdrop, decorated arch and champagne display" loading="lazy" width="145" height="94"><span class="decor-tile-caption">Champagne &amp; floral walls · Included</span></button>
             </div>
           </div>
@@ -335,9 +337,9 @@
             </div>
             <div class="decor-addon-choice">
               <label class="check"><input type="checkbox" name="Add-ons" value="Chair covers" data-price="25" data-wedding-included="true"> Chair covers · $25</label>
-              <button class="decor-photo-button" type="button" data-view-decor data-photo-index="3" data-decor-label="Chair covers" aria-label="Enlarge chair covers photo">
-                <span class="decor-photo-image"><span class="decor-sprite" style="--photo-x:100%;--photo-y:100%" aria-hidden="true"></span><span class="decor-zoom-icon" aria-hidden="true">⌕</span></span>
-                <span class="decor-preview-caption">Real venue photo · Tap to enlarge</span>
+              <button class="decor-photo-button" type="button" data-view-decor data-photo-index="5" data-decor-label="Chair covers" aria-label="Enlarge chair covers photo">
+                <span class="decor-photo-image"><img class="decor-cover-image" src="assets/chair-covers.webp" loading="lazy" width="86" height="70" alt="White fitted chair covers at The Dream Room"><span class="decor-zoom-icon" aria-hidden="true">⌕</span></span>
+                <span class="decor-preview-caption">Real chair covers · Tap to enlarge</span>
               </button>
             </div>
             <div class="decor-addon-choice">
@@ -410,8 +412,9 @@
     {label:'Aisle runner and ceremony styling',x:'0%',y:'0%'},
     {label:'High-rise cocktail tables',x:'100%',y:'0%'},
     {label:'Wedding centrepieces',x:'0%',y:'100%'},
-    {label:'Table linens and chair covers',x:'100%',y:'100%'},
-    {label:'Champagne and floral feature walls',src:'https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000034727.jpg/:/rs=w:1300,h:800',included:true}
+    {label:'Table linens',x:'100%',y:'100%'},
+    {label:'Champagne and floral feature walls',src:'https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000034727.jpg/:/rs=w:1300,h:800',included:true},
+    {label:'Chair covers',src:'assets/chair-covers.webp'}
   ];
   const decorPhotoDialog = document.getElementById('decorPhotoDialog');
   const decorPhotoImage = document.getElementById('expandedDecorPhoto');
@@ -424,6 +427,7 @@
     if (photo.src) {
       decorPhotoImage.hidden = true;
       decorSingleImage.hidden = false;
+      decorSingleImage.src = photo.src;
       decorSingleImage.alt = 'The Dream Room: ' + photo.label;
     } else {
       decorSingleImage.hidden = true;
