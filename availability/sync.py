@@ -88,6 +88,46 @@ def event_interval(event) -> tuple[datetime, datetime]:
     return start_local, end_local
 
 
+def normalize_malformed_events(cal: Calendar) -> None:
+    """Repair malformed BAND intervals BEFORE recurrence expansion.
+
+    The recurrence library silently reverses some inverted DTSTART/DTEND pairs.
+    If we waited until after expansion, that could mark the late-night booking
+    window as free. Instead mark the whole affected date(s) occupied.
+    """
+    for event in cal.walk("VEVENT"):
+        if str(event.get("STATUS", "")).upper() == "CANCELLED":
+            continue
+        if str(event.get("TRANSP", "")).upper() == "TRANSPARENT":
+            continue
+        if "DTSTART" not in event:
+            raise ValueError("Calendar event missing DTSTART")
+        original_start = event.decoded("DTSTART")
+        if "DTEND" in event:
+            original_end = event.decoded("DTEND")
+        elif "DURATION" in event:
+            original_end = original_start + event.decoded("DURATION")
+        elif isinstance(original_start, date) and not isinstance(original_start, datetime):
+            continue
+        else:
+            original_end = original_start
+        start_local = to_local(original_start)
+        end_local = to_local(original_end)
+        if end_local > start_local:
+            continue
+        days = 1 if end_local == start_local else 2
+        day = start_local.date()
+        all_day = isinstance(original_start, date) and not isinstance(original_start, datetime)
+        new_start = day if all_day else datetime.combine(day, time.min, tzinfo=ZONE)
+        new_end_date = day + timedelta(days=days)
+        new_end = new_end_date if all_day else datetime.combine(new_end_date, time.min, tzinfo=ZONE)
+        for key in ("DTSTART", "DTEND", "DURATION"):
+            if key in event:
+                del event[key]
+        event.add("DTSTART", new_start)
+        event.add("DTEND", new_end)
+
+
 def make_snapshot(ics_bytes: bytes, now_utc: datetime) -> dict:
     now_local = now_utc.astimezone(ZONE)
     first_date = now_local.date()
@@ -98,6 +138,7 @@ def make_snapshot(ics_bytes: bytes, now_utc: datetime) -> dict:
     cal = Calendar.from_ical(ics_bytes)
     if str(cal.get("VERSION", "")) != "2.0" or not cal.walk("VEVENT"):
         raise ValueError("Invalid or empty iCalendar; refusing to publish empty availability")
+    normalize_malformed_events(cal)
 
     occurrences = recurring_ical_events.of(cal).between(window_start, window_end)
     if len(occurrences) > MAX_OCCURRENCES:
