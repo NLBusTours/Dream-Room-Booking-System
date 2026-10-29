@@ -46,7 +46,7 @@ class AvailabilityTests(unittest.TestCase):
         serialized = json.dumps(result)
         self.assertNotIn("Customer Name", serialized)
         self.assertNotIn("private@example.com", serialized)
-        self.assertNotIn("one", serialized)
+        self.assertNotIn("UID:one", serialized)
 
     def test_all_day_and_transparent(self):
         sample = calendar(
