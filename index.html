@@ -78,9 +78,21 @@
     .decor-thumb {border:2px solid #e8cbd9;background:#faf0f6;border-radius:12px;overflow:hidden;padding:0;flex:0 0 120px;height:94px;scroll-snap-align:start;cursor:zoom-in;}
     .decor-thumb:focus-visible,.decor-photo-button:focus-visible {outline:3px solid var(--rose-dark);outline-offset:2px;}
     .decor-thumb img {display:block;width:100%;height:100%;object-fit:cover;}
-    .decor-addon-choice {display:flex;flex-direction:column;gap:4px;min-width:0;}
-    .decor-addon-choice .check {flex:1;}
-    .decor-photo-button {background:none;border:none;color:var(--rose-dark);font-size:.82rem;font-weight:650;text-align:left;text-decoration:underline;padding:3px 5px 8px;cursor:pointer;}
+    .decor-addon-choice {display:flex;align-items:center;gap:9px;min-width:0;padding:7px;border:1px solid #ead9e3;border-radius:12px;background:#fff;}
+    .decor-addon-choice .check {flex:1;border:0;background:none;padding:6px;min-width:0;}
+    .decor-photo-button {position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;flex:none;width:90px;background:none;border:0;color:#74435d;font-size:.66rem;text-align:center;padding:0;cursor:zoom-in;text-decoration:none;}
+    .decor-photo-image {position:relative;display:block;width:86px;height:70px;border-radius:10px;box-shadow:0 3px 9px rgba(76,32,54,.15);border:2px solid #e6cfdb;z-index:1;}
+    .decor-photo-button img {display:block;width:100%;height:100%;border-radius:8px;object-fit:cover;transition:transform .22s ease,box-shadow .22s ease;}
+    .decor-zoom-icon {position:absolute;right:3px;bottom:3px;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.94);box-shadow:0 1px 4px #5f34494d;color:#7c3c62;font-weight:900;font-size:1rem;}
+    .decor-preview-caption {line-height:1.25;max-width:100%;}
+    @media (hover:hover) and (pointer:fine) {
+      .decor-photo-button:hover {z-index:20;}
+      .decor-photo-button:hover img {transform:scale(2.35);box-shadow:0 9px 26px rgba(50,25,42,.3);position:relative;z-index:20;transform-origin:right center;}
+      .decor-photo-button:hover .decor-zoom-icon {z-index:21;}
+    }
+    @media (prefers-reduced-motion:reduce) {.decor-photo-button img{transition:none;}}
+    @media (max-width:580px) {.decor-addon-choice {min-height:95px;} .decor-photo-button{width:98px;} .decor-photo-image{width:92px;height:74px;}}
+
     .decor-photo-dialog {width:min(94vw,780px);max-height:90vh;border:1px solid #e4c9d7;border-radius:16px;background:#fff9fc;color:var(--ink);padding:16px;}
     .decor-photo-dialog::backdrop {background:rgba(35,17,29,.74);}
     .decor-dialog-heading {display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px;color:var(--rose-dark);}
@@ -268,19 +280,31 @@
             <label class="check"><input type="checkbox" id="cleanAddon" name="Add-ons" value="Post-event cleanup" data-wedding-included="true"> Cleanup · $50–$100</label>
             <div class="decor-addon-choice">
               <label class="check"><input type="checkbox" name="Add-ons" value="Linens" data-price="25" data-wedding-included="true"> Linens · $25</label>
-              <button class="decor-photo-button" type="button" data-view-decor aria-label="View Dream Room décor gallery for Linens">📷 View photos</button>
+              <button class="decor-photo-button" type="button" data-view-decor data-photo-index="3" data-decor-label="Linens" aria-label="Enlarge linens preview">
+                <span class="decor-photo-image"><img src="https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000037118.jpg/:/rs=w:1300,h:800" alt="Detail from your venue: Linens" loading="lazy" width="120" height="88"><span class="decor-zoom-icon" aria-hidden="true">⌕</span></span>
+                <span class="decor-preview-caption">Detail from your venue · Tap to enlarge</span>
+              </button>
             </div>
             <div class="decor-addon-choice">
               <label class="check"><input type="checkbox" name="Add-ons" value="Chair covers" data-price="25" data-wedding-included="true"> Chair covers · $25</label>
-              <button class="decor-photo-button" type="button" data-view-decor aria-label="View Dream Room décor gallery for Chair covers">📷 View photos</button>
+              <button class="decor-photo-button" type="button" data-view-decor data-photo-index="3" data-decor-label="Chair covers" aria-label="Enlarge chair covers preview">
+                <span class="decor-photo-image"><img src="https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000037118.jpg/:/rs=w:1300,h:800" alt="Detail from your venue: Chair covers" loading="lazy" width="120" height="88"><span class="decor-zoom-icon" aria-hidden="true">⌕</span></span>
+                <span class="decor-preview-caption">Detail from your venue · Tap to enlarge</span>
+              </button>
             </div>
             <div class="decor-addon-choice">
               <label class="check"><input type="checkbox" id="decorAddon" name="Add-ons" value="Additional decor"> Additional décor · from $25</label>
-              <button class="decor-photo-button" type="button" data-view-decor aria-label="View Dream Room décor gallery for Additional décor">📷 View photos</button>
+              <button class="decor-photo-button" type="button" data-view-decor data-photo-index="0" data-decor-label="Additional décor" aria-label="Enlarge additional décor preview">
+                <span class="decor-photo-image"><img src="https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000013660.jpg/:/rs=w:1300,h:800" alt="Venue inspiration: Additional décor" loading="lazy" width="120" height="88"><span class="decor-zoom-icon" aria-hidden="true">⌕</span></span>
+                <span class="decor-preview-caption">Venue inspiration · Tap to enlarge</span>
+              </button>
             </div>
             <div class="decor-addon-choice">
               <label class="check"><input type="checkbox" id="cocktailAddon" name="Add-ons" value="Cocktail tables"> Cocktail tables · $20 each</label>
-              <button class="decor-photo-button" type="button" data-view-decor aria-label="View Dream Room décor gallery for Cocktail tables">📷 View photos</button>
+              <button class="decor-photo-button" type="button" data-view-decor data-photo-index="1" data-decor-label="Cocktail tables" aria-label="Enlarge cocktail tables preview">
+                <span class="decor-photo-image"><img src="https://img1.wsimg.com/isteam/ip/04250bc1-675d-4146-8321-1a9f50ce16d7/1000013663.jpg/:/rs=w:1300,h:800" alt="Venue inspiration: Cocktail tables" loading="lazy" width="120" height="88"><span class="decor-zoom-icon" aria-hidden="true">⌕</span></span>
+                <span class="decor-preview-caption">Venue inspiration · Tap to enlarge</span>
+              </button>
             </div>
             <label class="check"><input type="checkbox" id="entertainmentAddon" name="Add-ons" value="Photography / character entertainment"> Photography / character entertainment · custom quote</label>
             <label class="check"><input type="checkbox" id="cateringAddon" name="Add-ons" value="Catering inquiry"> Catering · custom quote</label>
@@ -350,7 +374,13 @@
     button.addEventListener('click', () => showDecorPhoto(Number(button.dataset.photoIndex)));
   });
   document.querySelectorAll('[data-view-decor]').forEach(button => {
-    button.addEventListener('click', () => showDecorPhoto(0));
+    button.addEventListener('click', () => {
+      showDecorPhoto(Number(button.dataset.photoIndex || 0));
+      decorPhotoCaption.textContent = button.dataset.decorLabel + ': ' +
+        (button.dataset.decorLabel === 'Linens' || button.dataset.decorLabel === 'Chair covers'
+          ? 'detail from our venue. Tap the arrows for more venue photos.'
+          : 'general venue inspiration, not a close-up of this item. Tap the arrows for more photos.');
+    });
   });
   document.getElementById('closeDecorGallery').addEventListener('click', () => decorPhotoDialog.close());
   document.getElementById('prevDecorPhoto').addEventListener('click', () => showDecorPhoto(activeDecorPhotoIndex - 1));
