@@ -108,6 +108,19 @@
     .decor-single-large[hidden] {display:none !important;}
     .decor-dialog-main button {border:1px solid #e0d0d8;background:#fff;border-radius:9px;padding:9px 3px;cursor:pointer;}
     .decor-photo-dialog .hint {text-align:center;}
+    /* Calendar statuses are integrated into the actual time-selection cards. */
+    .slot-choice-enhanced select {display:none;}
+    .slot-cards {display:grid;gap:9px;margin:10px 0 8px;}
+    .slot-choice {display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border:1px solid #e7d3df;border-radius:12px;background:#fff;color:var(--ink);text-align:left;font:inherit;cursor:pointer;width:100%;box-shadow:0 2px 7px #6d32520c;transition:border-color .15s,background .15s,box-shadow .15s;}
+    .slot-choice .slot-title {font-size:.91rem;font-weight:680;line-height:1.4;flex:1;}
+    .slot-choice[aria-pressed="true"] {border:2px solid #ad628f;background:#fff6fb;box-shadow:0 0 0 2px #ad628f1c;padding:13px;}
+    .slot-choice:focus-visible {outline:3px solid #ab6a91;outline-offset:2px;}
+    .slot-choice:disabled {background:#f7f3f5;color:#847a80;cursor:not-allowed;box-shadow:none;}
+    .slot-choice:disabled .slot-title {text-decoration:line-through;text-decoration-color:#ac8599;}
+    .slot-choice .availability-tag {font-size:.73rem;flex:none;}
+    .slot-helper {font-size:.81rem;color:#695b64;line-height:1.5;margin:7px 0 8px;}
+    .slot-helper.error {color:#963d59;font-weight:650;}
+    @media (max-width:480px) {.slot-choice{gap:7px;padding:12px 10px;}.slot-choice .slot-title{font-size:.85rem;}}
     .availability-checker {margin:16px 0 18px;padding:17px;background:#fffafd;border:1px solid #e7d3df;border-radius:14px;}
     .availability-head {display:flex;align-items:center;justify-content:space-between;gap:12px;}
     .availability-head h3 {margin:4px 0 6px;color:var(--rose-dark);font-size:1.3rem;}
@@ -229,6 +242,8 @@
                 <option value="14:00|17:00">2:00 PM – 5:00 PM · $350 special</option>
                 <option value="other">Request another time · $150/hour</option>
               </select>
+              <div id="showerSlotCards" class="slot-cards" role="group" aria-label="Choose an available shower time" hidden></div>
+              <p id="showerSlotStatus" class="slot-helper" role="status" aria-live="polite" hidden></p>
               <p class="hint">No evening promotional slots. Setup and cleanup must fit within the booked hours.</p>
             </div>
           </div>
@@ -244,6 +259,8 @@
                 <option value="14:00|16:00">2:00 PM – 4:00 PM</option>
                 <option value="other">Request another time (subject to approval)</option>
               </select>
+              <div id="childSlotCards" class="slot-cards" role="group" aria-label="Choose an available children's party time" hidden></div>
+              <p id="childSlotStatus" class="slot-helper" role="status" aria-live="polite" hidden></p>
               <p class="hint">These are our preferred time slots. Other times may be requested, but they must be approved by our team and may affect availability.</p>
             </div>
           </div>
