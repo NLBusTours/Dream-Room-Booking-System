@@ -9,7 +9,7 @@ This site also has a compact embed mode, intended for a GoDaddy **Websites + Mar
   src="https://nlbustours.github.io/Dream-Room-Booking-System/?embed=1"
   title="The Dream Room booking inquiry form"
   loading="lazy"
-  style="display:block;width:100%;height:3500px;border:0;background:transparent;"
+  style="display:block;width:100%;height:4000px;border:0;background:transparent;"
 ></iframe>
 ```
 
@@ -19,8 +19,8 @@ This site also has a compact embed mode, intended for a GoDaddy **Websites + Mar
 2. Open the page where the form should appear (for example, **Book The Dream Room**).
 3. Choose **Add Section > HTML** (sometimes found under **Files & Web**).
 4. Paste the HTML snippet above in **Custom Code**.
-5. Set **Forced Height** to **3550 px** to start. On a narrow phone or when optional fields expand, you may need to increase this further. The embedded form scrolls within the iframe if necessary.
-6. Preview, **Publish**, and test on an actual phone and desktop browser. The added pricing calculator can increase page height. GoDaddy may display custom HTML differently in its editor and on the published site.
+5. Set **Forced Height** to **4050 px** to start. On a narrow phone or when optional fields expand, you may need to increase this further. The embedded form scrolls within the iframe if necessary.
+6. Preview, **Publish**, and test on an actual phone and desktop browser. Wedding package details and the pricing calculator can increase the expanded form height. GoDaddy may display custom HTML differently in its editor and on the published site.
 
 The embedded version hides the standalone GitHub site's masthead, information sidebar and footer to avoid doubling the GoDaddy page's navigation and branding.
 
