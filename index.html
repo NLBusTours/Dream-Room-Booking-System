@@ -130,6 +130,7 @@
             <div class="field"><label for="rawDate">Preferred date <span class="req">*</span></label><input id="rawDate" type="date" required><input id="prettyDate" type="hidden" name="Date"></div>
             <div class="field"><label for="backupDate">Alternate date (optional)</label><input id="backupDate" type="date" name="Alternate date"></div>
           </div>
+          <p class="hint" id="sundayShowerReminder" hidden>Our Sunday 3-hour shower special is available from 10 AM to 1 PM or 2 PM to 5 PM. Select a Sunday to request this option.</p>
           <div id="sundayShowerBlock" class="section" hidden>
             <h3>Sunday 3-hour shower special</h3>
             <p class="hint">Available for baby showers and bridal showers on Sundays only. Choose a set time slot, or request a standard rental for other hours.</p>
@@ -259,6 +260,7 @@
     const count = document.getElementById('guestCount');
     const privateOccasionBlock = document.getElementById('privateOccasionBlock');
     const privateOccasion = document.getElementById('privateType');
+    const sundayShowerReminder = document.getElementById('sundayShowerReminder');
     const sundayShowerBlock = document.getElementById('sundayShowerBlock');
     const showerOption = document.getElementById('showerBookingOption');
     const showerSlotBlock = document.getElementById('sundayShowerSlotsBlock');
@@ -297,6 +299,9 @@
       const isHost = typeInput.value === 'host';
       const isChild = typeInput.value === 'children';
       const eligible = sundaySpecialEligible();
+      const isShower = typeInput.value === 'private' &&
+        (privateOccasion.value === 'Baby shower' || privateOccasion.value === 'Bridal shower');
+      sundayShowerReminder.hidden = !isShower || eligible;
       const wasFixed = start.readOnly;
       sundayShowerBlock.hidden = !eligible;
       showerOption.disabled = !eligible;
@@ -414,6 +419,12 @@
       submitBtn.disabled = true;
       submitBtn.textContent = 'Sending your request…';
       const data = new FormData(form);
+      if (typeInput.value === 'children' && childSlot.value) {
+        data.set("Children's party time slot", childSlot.options[childSlot.selectedIndex].textContent.trim());
+      }
+      if (sundaySpecialEligible() && showerOption.value === 'special' && showerSlot.value) {
+        data.set('Sunday shower time slot', showerSlot.options[showerSlot.selectedIndex].textContent.trim());
+      }
       const addOns = data.getAll('Add-ons');
       data.delete('Add-ons');
       if (addOns.length) data.append('Requested add-ons', addOns.join(', '));
