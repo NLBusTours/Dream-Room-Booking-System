@@ -307,6 +307,7 @@
     function refreshBookingTimes() {
       const isHost = typeInput.value === 'host';
       const isChild = typeInput.value === 'children';
+      const isOtherChildTime = isChild && childSlot.value === 'other';
       const eligible = sundaySpecialEligible();
       const isShower = typeInput.value === 'private' &&
         (privateOccasion.value === 'Baby shower' || privateOccasion.value === 'Bridal shower');
@@ -325,7 +326,7 @@
       childSlot.disabled = !isChild;
       childSlot.required = isChild;
       if (!isChild) childSlot.value = '';
-      const fixed = isChild || isSpecial;
+      const fixed = (isChild && !isOtherChildTime) || isSpecial;
       const waitingForOption = eligible && !showerOption.value;
       customTimesBlock.hidden = isHost || fixed || waitingForOption;
       start.required = !isHost && !fixed && !waitingForOption;
@@ -342,7 +343,9 @@
         end.readOnly = false;
         if (wasFixed) { start.value = ''; end.value = ''; }
       }
-      if (isChild) {
+      if (isOtherChildTime) {
+        durationHint.textContent = 'Request a two-hour party at another time. Nonstandard hours require approval and are not guaranteed.';
+      } else if (isChild) {
         durationHint.textContent = 'Choose one of our two-hour party slots. Booking times are subject to confirmation.';
       } else if (isSpecial) {
         durationHint.textContent = 'The Sunday special is a three-hour rental, including setup, decorating, cleanup and takedown.';
@@ -416,6 +419,11 @@
           showFeedback('Please choose a Sunday for your alternate date or leave it blank for the Sunday special.'); backupDate.focus(); return;
         }
         const mins = durationMinutes();
+        if (typeInput.value === 'children' && childSlot.value === 'other' && mins !== 120) {
+          showFeedback("Please request a two-hour window for your children's party. Other times require approval.");
+          start.focus();
+          return;
+        }
         if (mins === null || mins > 16*60) { showFeedback('Please double-check your start and end times. For rentals longer than 16 hours, contact our team directly.'); start.focus(); return; }
         if (typeInput.value === 'children' && document.getElementById('childNumber').value && Number(document.getElementById('childNumber').value) > Number(count.value)) {
           showFeedback('The number of children cannot exceed the total guest count.'); count.focus(); return;
@@ -429,7 +437,9 @@
       submitBtn.textContent = 'Sending your request…';
       const data = new FormData(form);
       if (typeInput.value === 'children' && childSlot.value) {
-        data.set("Children's party time slot", childSlot.options[childSlot.selectedIndex].textContent.trim());
+        data.set("Children's party time slot", childSlot.value === 'other'
+          ? 'Other time requested (requires staff approval)'
+          : childSlot.options[childSlot.selectedIndex].textContent.trim());
       }
       if (sundaySpecialEligible() && showerOption.value === 'special' && showerSlot.value) {
         data.set('Sunday shower time slot', showerSlot.options[showerSlot.selectedIndex].textContent.trim());
