@@ -26,7 +26,7 @@ The embedded version hides the standalone GitHub site's masthead, information si
 
 ## Important details
 
-- This is an **inquiry form**, not a confirmed reservation or a live availability checker.
+- This is an **inquiry form**, not a confirmed reservation. It contains a provisional calendar availability checker, which works after you privately configure the BAND subscription secret and run the GitHub Actions workflow. See [availability/SETUP.md](availability/SETUP.md).
 - The form uses the same Web3Forms endpoint and thank-you page as the full website. Confirm a **test inquiry arrives in your intended inbox**.
 - The public site URL is https://nlbustours.github.io/Dream-Room-Booking-System/ if you'd rather link directly instead of embedding.
 - GoDaddy Websites + Marketing renders custom HTML inside its own iframe. A nested iframe may require a larger Forced Height or may be blocked by the site's settings. If it doesn't work on the published site, use a button linking to the full booking form rather than an iframe.
