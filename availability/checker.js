@@ -273,8 +273,9 @@
     }
     const code = availabilityFor(fresh ? snapshot : null, day, begin, end);
     const weddingPackage = byId('weddingPackage');
-    const requiredHours = type === 'wedding' && weddingPackage &&
-      (weddingPackage.value === 'styled4' ? 4 : weddingPackage.value === 'styled8' ? 8 : null);
+    const requiredHours = type === 'wedding' && weddingPackage
+      ? (weddingPackage.value === 'styled4' ? 4 : weddingPackage.value === 'styled8' ? 8 : null)
+      : null;
     const parts = bookingParts(day, begin, end);
     const selectedMinutes = parts && (minutes(end) - minutes(begin) + 1440) % 1440;
     message.textContent = code === 'invalid'
@@ -359,7 +360,7 @@
       else if (code === 'booked') error = 'Your requested hours overlap the booked/held times above. Please select another date or time.';
       else if (code === 'invalid') error = 'Please choose valid access times, no more than 16 hours apart.';
       const packageValue = byId('weddingPackage')?.value;
-      const hours = type === 'wedding' && (packageValue === 'styled4' ? 4 : packageValue === 'styled8' ? 8 : null);
+      const hours = type === 'wedding' ? (packageValue === 'styled4' ? 4 : packageValue === 'styled8' ? 8 : null) : null;
       const duration = (minutes(endField.value) - minutes(startField.value) + 1440) % 1440;
       if (!error && hours !== null && duration !== hours * 60) {
         error = 'This wedding package must have exactly ' + hours + ' hours of access.';
